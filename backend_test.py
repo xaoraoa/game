@@ -64,6 +64,7 @@ class IrysReflexAPITester:
         """Test submitting a score without transaction ID"""
         test_score = {
             "player": "0x1234567890123456789012345678901234567890",
+            "username": "TestPlayer1",
             "time": 250,
             "penalty": False,
             "timestamp": datetime.utcnow().isoformat()
