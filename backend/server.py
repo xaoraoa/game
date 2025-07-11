@@ -32,6 +32,7 @@ scores_collection = db.scores
 
 class ScoreSubmission(BaseModel):
     player: str
+    username: str
     time: int
     penalty: bool = False
     timestamp: str
@@ -40,6 +41,7 @@ class ScoreSubmission(BaseModel):
 class LeaderboardEntry(BaseModel):
     id: str
     player: str
+    username: str
     time: int
     penalty: bool
     timestamp: str
