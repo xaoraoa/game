@@ -82,6 +82,7 @@ class IrysReflexAPITester:
         """Test submitting a score with penalty"""
         test_score = {
             "player": "0x9876543210987654321098765432109876543210",
+            "username": "TestPlayer2",
             "time": 500,
             "penalty": True,
             "timestamp": datetime.utcnow().isoformat()
