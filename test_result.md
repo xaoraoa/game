@@ -162,6 +162,18 @@ backend:
         agent: "main"
         comment: "GET /api/player/{address} endpoint returns individual player statistics"
 
+  - task: "Enhanced Game Modes API feature"
+    implemented: true
+    working: true
+    file: "/app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "testing"
+        comment: "Comprehensive testing of enhanced Game Modes feature completed successfully. All 21 tests passed (100% success rate). Verified: NEW /api/game-modes endpoint returns all 4 game modes (classic, sequence, endurance, precision) with proper descriptions and icons. Enhanced POST /api/scores accepts game_mode field and mode-specific fields (hits_count for endurance, accuracy for precision, sequence_times array for sequence, total_targets). Enhanced GET /api/leaderboard supports game_mode query parameter filtering with correct sorting logic (endurance mode sorted by hits_count descending, all other modes sorted by time ascending). Database schema correctly stores and indexes all new fields including game_mode, hits_count, accuracy, sequence_times, total_targets. Backward compatibility fully maintained - scores submitted without game_mode field default to 'classic' mode. Mixed mode leaderboard functionality works correctly showing all game modes together. All original API functionality remains intact and working. Game Modes feature is production-ready and fully functional."
+
 frontend:
   - task: "React app with basic game mechanics"
     implemented: true
