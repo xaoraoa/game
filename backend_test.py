@@ -344,8 +344,8 @@ class IrysReflexAPITester:
         )
 
 def main():
-    print("🚀 Starting Irys Reflex API Tests...")
-    print("=" * 50)
+    print("🚀 Starting Enhanced Irys Reflex API Tests (Game Modes Feature)...")
+    print("=" * 60)
     
     # Initialize tester
     tester = IrysReflexAPITester()
@@ -353,30 +353,50 @@ def main():
     # Run all tests in sequence
     print("\n📋 Running Backend API Tests:")
     
-    # Test 1: Empty leaderboard
-    tester.test_leaderboard_empty()
+    # Test 1: Game Modes API
+    print("\n🎮 Testing Game Modes API...")
+    tester.test_get_game_modes()
     
-    # Test 2: Submit scores
+    # Test 2: Enhanced Score Submission with Game Modes
+    print("\n📊 Testing Enhanced Score Submission...")
+    tester.test_submit_classic_mode_score()
+    tester.test_submit_sequence_mode_score()
+    tester.test_submit_endurance_mode_score()
+    tester.test_submit_precision_mode_score()
+    
+    # Test 3: Backward Compatibility
+    print("\n🔄 Testing Backward Compatibility...")
+    tester.test_backward_compatibility_score()
     tester.test_submit_score_without_tx()
     tester.test_submit_score_with_penalty()
     tester.test_submit_score_with_mock_tx()
     
-    # Test 3: Leaderboard with data
+    # Test 4: Enhanced Leaderboard with Game Mode Filtering
+    print("\n🏆 Testing Enhanced Leaderboard...")
+    tester.test_leaderboard_classic_mode()
+    tester.test_leaderboard_sequence_mode()
+    tester.test_leaderboard_endurance_mode()
+    tester.test_leaderboard_precision_mode()
+    tester.test_mixed_mode_leaderboard()
+    
+    # Test 5: Original functionality
+    print("\n🔍 Testing Original Functionality...")
+    tester.test_leaderboard_empty()
     tester.test_leaderboard_with_data()
     tester.test_leaderboard_with_limit()
-    
-    # Test 4: Player scores
     tester.test_player_scores()
     
-    # Test 5: Transaction verification
+    # Test 6: Transaction verification
+    print("\n🔐 Testing Transaction Verification...")
     tester.test_verify_transaction_mock()
     tester.test_verify_transaction_invalid()
     
-    # Test 6: Invalid data handling
+    # Test 7: Invalid data handling
+    print("\n❌ Testing Error Handling...")
     tester.test_invalid_score_submission()
     
     # Print final results
-    print("\n" + "=" * 50)
+    print("\n" + "=" * 60)
     print(f"📊 Final Results:")
     print(f"   Tests Run: {tester.tests_run}")
     print(f"   Tests Passed: {tester.tests_passed}")
@@ -384,10 +404,10 @@ def main():
     print(f"   Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
     
     if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed!")
+        print("🎉 All tests passed! Game Modes feature is working correctly!")
         return 0
     else:
-        print("⚠️  Some tests failed!")
+        print("⚠️  Some tests failed! Check the output above for details.")
         return 1
 
 if __name__ == "__main__":
