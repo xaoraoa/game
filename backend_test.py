@@ -169,6 +169,7 @@ class IrysReflexAPITester:
         """Test submitting invalid score data"""
         invalid_score = {
             "player": "invalid_address",
+            "username": "TestUser",
             "time": "not_a_number",  # Invalid time
             "penalty": "not_boolean",  # Invalid penalty
             "timestamp": "invalid_timestamp"
