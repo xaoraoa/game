@@ -64,6 +64,7 @@ async def startup_event():
     # Create indexes for efficient queries
     await scores_collection.create_index([("time", 1)])  # Ascending for best times
     await scores_collection.create_index([("player", 1)])
+    await scores_collection.create_index([("game_mode", 1)])  # Index for game mode filtering
     # Create unique index only for non-null tx_id values
     await scores_collection.create_index([("tx_id", 1)], unique=True, sparse=True)
 
