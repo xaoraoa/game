@@ -265,3 +265,5 @@ test_plan:
 agent_communication:
   - agent: "main"
     message: "Initial analysis complete. Current app has working basic functionality but needs real Irys SDK integration, Phaser.js implementation, and deployment configuration. All backend services are running successfully."
+  - agent: "main"
+    message: "Real Irys SDK integration completed. Fixed environment variables from VITE_ to REACT_APP_ prefixes. Vercel deployment configuration added. Frontend experiencing memory issues during build - need to test backend first then troubleshoot frontend."
