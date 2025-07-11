@@ -5,7 +5,7 @@ from datetime import datetime
 import uuid
 
 class IrysReflexAPITester:
-    def __init__(self, base_url="https://f014c41f-26ca-4979-aaec-8858f2412772.preview.emergentagent.com"):
+    def __init__(self, base_url="https://64a37b91-caba-4d88-9d06-7daa6209a98a.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
