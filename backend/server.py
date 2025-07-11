@@ -70,10 +70,13 @@ async def submit_score(score: ScoreSubmission):
             "time": score.time,
             "penalty": score.penalty,
             "timestamp": score.timestamp,
-            "tx_id": score.tx_id,
             "verified": False,
             "created_at": datetime.utcnow()
         }
+        
+        # Only add tx_id if it's provided (to avoid null values in unique index)
+        if score.tx_id:
+            score_doc["tx_id"] = score.tx_id
         
         # If there's a transaction ID, verify it
         if score.tx_id:
