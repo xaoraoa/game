@@ -547,10 +547,10 @@ const App = () => {
         </div>
 
         <div className="leaderboard-section">
-          <h2 className="leaderboard-title">🏆 Leaderboard</h2>
+          <h2 className="leaderboard-title">🏆 Leaderboard - {getGameModeDisplayName(selectedGameMode)}</h2>
           <div className="leaderboard">
             {leaderboard.length === 0 ? (
-              <p className="no-scores">No scores yet. Be the first!</p>
+              <p className="no-scores">No scores yet for {getGameModeDisplayName(selectedGameMode)} mode. Be the first!</p>
             ) : (
               <div className="leaderboard-list">
                 {leaderboard.map((entry, index) => (
@@ -563,7 +563,10 @@ const App = () => {
                       </div>
                     </div>
                     <div className="time">
-                      {entry.time}ms {entry.penalty && '(penalty)'}
+                      {entry.game_mode === 'endurance' ? `${entry.time} hits` : 
+                       entry.game_mode === 'precision' ? `${entry.time}ms (${entry.accuracy ? entry.accuracy.toFixed(1) : '0'}%)` :
+                       `${entry.time}ms`}
+                      {entry.penalty && ' (penalty)'}
                     </div>
                     <div className="verified">
                       {entry.verified ? '✅' : '⏳'}
