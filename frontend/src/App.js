@@ -36,7 +36,7 @@ const App = () => {
     audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
   }, []);
 
-  // Initialize wallet address on component mount
+  // Initialize wallet address and game modes on component mount
   useEffect(() => {
     const initializeWallet = async () => {
       try {
@@ -49,7 +49,20 @@ const App = () => {
       }
     };
 
+    const fetchGameModes = async () => {
+      try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/game-modes`);
+        if (response.ok) {
+          const data = await response.json();
+          setGameModes(data.modes);
+        }
+      } catch (error) {
+        console.error('Error fetching game modes:', error);
+      }
+    };
+
     initializeWallet();
+    fetchGameModes();
     fetchLeaderboard();
   }, []);
 
