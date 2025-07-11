@@ -13,6 +13,18 @@ const App = () => {
   const [uploading, setUploading] = useState(false);
   const [lastTxId, setLastTxId] = useState('');
   const [gameStarted, setGameStarted] = useState(false);
+  const [selectedGameMode, setSelectedGameMode] = useState('classic');
+  const [gameModes, setGameModes] = useState([]);
+  
+  // New state for different game modes
+  const [sequenceCount, setSequenceCount] = useState(0);
+  const [sequenceTimes, setSequenceTimes] = useState([]);
+  const [totalSequenceTargets, setTotalSequenceTargets] = useState(3);
+  const [enduranceScore, setEnduranceScore] = useState(0);
+  const [enduranceTimeLeft, setEnduranceTimeLeft] = useState(60);
+  const [enduranceTimer, setEnduranceTimer] = useState(null);
+  const [precisionMissed, setPrecisionMissed] = useState(0);
+  const [precisionHits, setPrecisionHits] = useState(0);
   
   const gameRef = useRef(null);
   const startTimeRef = useRef(null);
