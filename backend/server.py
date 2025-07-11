@@ -196,3 +196,35 @@ async def verify_transaction(tx_id: str):
                 
     except Exception as e:
         return {"verified": False, "error": str(e)}
+
+@app.get("/api/game-modes")
+async def get_game_modes():
+    """Get available game modes with their descriptions"""
+    return {
+        "modes": [
+            {
+                "id": "classic",
+                "name": "Classic",
+                "description": "Traditional single-target reaction time test",
+                "icon": "🎯"
+            },
+            {
+                "id": "sequence",
+                "name": "Sequence",
+                "description": "Hit multiple targets in sequence",
+                "icon": "🔄"
+            },
+            {
+                "id": "endurance",
+                "name": "Endurance",
+                "description": "Hit as many targets as possible in 60 seconds",
+                "icon": "⏱️"
+            },
+            {
+                "id": "precision",
+                "name": "Precision",
+                "description": "Smaller targets for accuracy testing",
+                "icon": "🎪"
+            }
+        ]
+    }
