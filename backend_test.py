@@ -101,6 +101,7 @@ class IrysReflexAPITester:
         mock_tx_id = f"mock_tx_{uuid.uuid4().hex[:8]}"
         test_score = {
             "player": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+            "username": "TestPlayer3",
             "time": 180,
             "penalty": False,
             "timestamp": datetime.utcnow().isoformat(),
