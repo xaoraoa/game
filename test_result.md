@@ -224,16 +224,16 @@ frontend:
         comment: "Game currently uses vanilla React, Phaser.js not implemented"
 
   - task: "Vercel deployment configuration"
-    implemented: false
-    working: false
-    file: "N/A"
+    implemented: true
+    working: true
+    file: "/app/vercel.json"
     stuck_count: 0
     priority: "medium"
     needs_retesting: false
     status_history:
-      - working: false
+      - working: true
         agent: "main"
-        comment: "No Vercel deployment config provided yet"
+        comment: "Vercel deployment configuration completed with vercel.json, backend/index.py, and _redirects"
 
   - task: "Jest + React Testing Library tests"
     implemented: false
