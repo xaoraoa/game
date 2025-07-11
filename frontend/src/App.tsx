@@ -3,36 +3,25 @@ import toast, { Toaster } from 'react-hot-toast';
 import { uploadScore, getWalletAddress, getIrysExplorerUrl } from './lib/irys';
 import './App.css';
 
-interface LeaderboardEntry {
-  id: string;
-  player: string;
-  username: string;
-  time: number;
-  penalty: boolean;
-  timestamp: string;
-  tx_id?: string;
-  verified: boolean;
-}
-
-const App: React.FC = () => {
-  const [gameState, setGameState] = useState<'waiting' | 'ready' | 'flashed' | 'finished'>('waiting');
-  const [reactionTime, setReactionTime] = useState<number | null>(null);
-  const [penalty, setPenalty] = useState<boolean>(false);
-  const [username, setUsername] = useState<string>('');
-  const [walletAddress, setWalletAddress] = useState<string>('');
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
-  const [uploading, setUploading] = useState<boolean>(false);
-  const [lastTxId, setLastTxId] = useState<string>('');
-  const [gameStarted, setGameStarted] = useState<boolean>(false);
+const App = () => {
+  const [gameState, setGameState] = useState('waiting');
+  const [reactionTime, setReactionTime] = useState(null);
+  const [penalty, setPenalty] = useState(false);
+  const [username, setUsername] = useState('');
+  const [walletAddress, setWalletAddress] = useState('');
+  const [leaderboard, setLeaderboard] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [lastTxId, setLastTxId] = useState('');
+  const [gameStarted, setGameStarted] = useState(false);
   
-  const gameRef = useRef<HTMLDivElement>(null);
-  const startTimeRef = useRef<number | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const gameRef = useRef(null);
+  const startTimeRef = useRef(null);
+  const timeoutRef = useRef(null);
+  const audioContextRef = useRef(null);
 
   // Initialize Web Audio API
   useEffect(() => {
-    audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
   }, []);
 
   // Initialize wallet address on component mount
@@ -167,7 +156,7 @@ const App: React.FC = () => {
       }
     } catch (error) {
       console.error("Error uploading to Irys:", error);
-      toast.error("Failed to upload score: " + (error as Error).message);
+      toast.error("Failed to upload score: " + error.message);
     } finally {
       setUploading(false);
     }
