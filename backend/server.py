@@ -51,7 +51,8 @@ async def startup_event():
     # Create indexes for efficient queries
     await scores_collection.create_index([("time", 1)])  # Ascending for best times
     await scores_collection.create_index([("player", 1)])
-    await scores_collection.create_index([("tx_id", 1)], unique=True, sparse=True)
+    # Create unique index only for non-null tx_id values
+    await scores_collection.create_index([("tx_id", 1)], unique=True, sparse=True, partialFilterExpression={"tx_id": {"$ne": None}})
 
 @app.post("/api/scores")
 async def submit_score(score: ScoreSubmission):
