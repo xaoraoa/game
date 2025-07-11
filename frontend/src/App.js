@@ -200,12 +200,91 @@ const App = () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
+      if (enduranceTimer) {
+        clearInterval(enduranceTimer);
+      }
     } else if (gameState === 'flashed') {
       // Calculate reaction time
       const endTime = Date.now();
       const reaction = endTime - (startTimeRef.current || 0);
-      setReactionTime(reaction);
+      
+      handleGameModeClick(reaction);
+    }
+  };
+
+  const handleGameModeClick = (reaction) => {
+    switch (selectedGameMode) {
+      case 'classic':
+        handleClassicClick(reaction);
+        break;
+      case 'sequence':
+        handleSequenceClick(reaction);
+        break;
+      case 'endurance':
+        handleEnduranceClick(reaction);
+        break;
+      case 'precision':
+        handlePrecisionClick(reaction);
+        break;
+      default:
+        handleClassicClick(reaction);
+    }
+  };
+
+  const handleClassicClick = (reaction) => {
+    setReactionTime(reaction);
+    setGameState('finished');
+  };
+
+  const handleSequenceClick = (reaction) => {
+    const newSequenceTimes = [...sequenceTimes, reaction];
+    setSequenceTimes(newSequenceTimes);
+    
+    if (newSequenceTimes.length >= totalSequenceTargets) {
+      // Sequence complete
+      const averageTime = Math.round(newSequenceTimes.reduce((a, b) => a + b, 0) / newSequenceTimes.length);
+      setReactionTime(averageTime);
       setGameState('finished');
+    } else {
+      // Next target in sequence
+      setSequenceCount(newSequenceTimes.length);
+      setGameState('ready');
+      
+      // Short delay before next target
+      const delay = Math.random() * 1500 + 500;
+      timeoutRef.current = setTimeout(() => {
+        setGameState('flashed');
+        startTimeRef.current = Date.now();
+        playPingSound();
+      }, delay);
+    }
+  };
+
+  const handleEnduranceClick = (reaction) => {
+    setEnduranceScore(prev => prev + 1);
+    setGameState('ready');
+    
+    // Quick next target
+    const delay = Math.random() * 1500 + 300;
+    timeoutRef.current = setTimeout(() => {
+      if (enduranceTimeLeft > 0) {
+        setGameState('flashed');
+        startTimeRef.current = Date.now();
+        playPingSound();
+      }
+    }, delay);
+  };
+
+  const handlePrecisionClick = (reaction) => {
+    setPrecisionHits(prev => prev + 1);
+    setReactionTime(reaction);
+    setGameState('finished');
+  };
+
+  const handleCircleMiss = () => {
+    if (selectedGameMode === 'precision') {
+      setPrecisionMissed(prev => prev + 1);
+      toast.error('Missed! Try to be more precise.');
     }
   };
 
