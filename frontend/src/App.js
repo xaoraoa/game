@@ -299,7 +299,7 @@ const App = () => {
       return;
     }
 
-    if (reactionTime === null) {
+    if (reactionTime === null && selectedGameMode !== 'endurance') {
       toast.error('No reaction time recorded');
       return;
     }
@@ -312,8 +312,21 @@ const App = () => {
         username: username.trim(),
         time: reactionTime,
         penalty: penalty,
-        timestamp: Date.now()
+        timestamp: Date.now(),
+        game_mode: selectedGameMode
       };
+
+      // Add mode-specific data
+      if (selectedGameMode === 'sequence') {
+        scoreData.sequence_times = sequenceTimes;
+        scoreData.total_targets = totalSequenceTargets;
+      } else if (selectedGameMode === 'endurance') {
+        scoreData.hits_count = enduranceScore;
+        scoreData.time = enduranceScore; // For endurance, "time" is actually hits
+      } else if (selectedGameMode === 'precision') {
+        scoreData.accuracy = precisionHits / (precisionHits + precisionMissed) * 100;
+        scoreData.total_targets = precisionHits + precisionMissed;
+      }
 
       // Upload to Irys
       const txId = await uploadScore(scoreData);
@@ -331,7 +344,12 @@ const App = () => {
           time: reactionTime,
           penalty: penalty,
           timestamp: new Date().toISOString(),
-          tx_id: txId
+          tx_id: txId,
+          game_mode: selectedGameMode,
+          hits_count: selectedGameMode === 'endurance' ? enduranceScore : null,
+          accuracy: selectedGameMode === 'precision' ? (precisionHits / (precisionHits + precisionMissed) * 100) : null,
+          sequence_times: selectedGameMode === 'sequence' ? sequenceTimes : null,
+          total_targets: selectedGameMode === 'sequence' ? totalSequenceTargets : (selectedGameMode === 'precision' ? precisionHits + precisionMissed : null)
         }),
       });
 
