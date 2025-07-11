@@ -135,13 +135,26 @@ async def submit_score(score: ScoreSubmission):
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/leaderboard", response_model=List[LeaderboardEntry])
-async def get_leaderboard(limit: int = 10):
+async def get_leaderboard(limit: int = 10, game_mode: Optional[str] = None):
     try:
-        # Get top scores (lowest reaction times are best)
-        cursor = scores_collection.find(
-            {}, 
-            {"_id": 0, "created_at": 0}
-        ).sort("time", 1).limit(limit)
+        # Build filter query
+        filter_query = {}
+        if game_mode:
+            filter_query["game_mode"] = game_mode
+        
+        # Get top scores - sorting depends on game mode
+        if game_mode == "endurance":
+            # For endurance mode, sort by hits_count (descending)
+            cursor = scores_collection.find(
+                filter_query, 
+                {"_id": 0, "created_at": 0}
+            ).sort("hits_count", -1).limit(limit)
+        else:
+            # For other modes, sort by time (ascending - lower is better)
+            cursor = scores_collection.find(
+                filter_query, 
+                {"_id": 0, "created_at": 0}
+            ).sort("time", 1).limit(limit)
         
         leaderboard = await cursor.to_list(length=limit)
         return leaderboard
