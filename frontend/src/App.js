@@ -407,10 +407,29 @@ const App = () => {
     setPenalty(false);
     setReactionTime(null);
     setLastTxId('');
+    
+    // Reset mode-specific state
+    setSequenceCount(0);
+    setSequenceTimes([]);
+    setEnduranceScore(0);
+    setEnduranceTimeLeft(60);
+    setPrecisionMissed(0);
+    setPrecisionHits(0);
+    
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
+    if (enduranceTimer) {
+      clearInterval(enduranceTimer);
+    }
   };
+
+  // Update leaderboard when game mode changes
+  useEffect(() => {
+    if (selectedGameMode) {
+      fetchLeaderboard(selectedGameMode);
+    }
+  }, [selectedGameMode]);
 
   return (
     <div className="app">
