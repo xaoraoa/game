@@ -37,6 +37,12 @@ class ScoreSubmission(BaseModel):
     penalty: bool = False
     timestamp: str
     tx_id: Optional[str] = None
+    game_mode: str = "classic"  # classic, sequence, endurance, precision
+    # Mode-specific fields
+    hits_count: Optional[int] = None  # for endurance mode
+    accuracy: Optional[float] = None  # for precision mode
+    sequence_times: Optional[List[int]] = None  # for sequence mode
+    total_targets: Optional[int] = None  # for sequence/precision modes
 
 class LeaderboardEntry(BaseModel):
     id: str
@@ -47,6 +53,11 @@ class LeaderboardEntry(BaseModel):
     timestamp: str
     tx_id: Optional[str] = None
     verified: bool = False
+    game_mode: str = "classic"
+    hits_count: Optional[int] = None
+    accuracy: Optional[float] = None
+    sequence_times: Optional[List[int]] = None
+    total_targets: Optional[int] = None
 
 @app.on_event("startup")
 async def startup_event():
