@@ -66,6 +66,7 @@ async def submit_score(score: ScoreSubmission):
         score_doc = {
             "id": score_id,
             "player": score.player,
+            "username": score.username,
             "time": score.time,
             "penalty": score.penalty,
             "timestamp": score.timestamp,
