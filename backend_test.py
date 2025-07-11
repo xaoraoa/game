@@ -182,6 +182,167 @@ class IrysReflexAPITester:
             422  # Validation error
         )
 
+    # NEW GAME MODES TESTS
+    def test_get_game_modes(self):
+        """Test getting available game modes"""
+        return self.run_test(
+            "Get Game Modes",
+            "GET",
+            "api/game-modes",
+            200
+        )
+
+    def test_submit_classic_mode_score(self):
+        """Test submitting a classic mode score"""
+        test_score = {
+            "player": "0x1111111111111111111111111111111111111111",
+            "username": "ClassicPlayer",
+            "time": 200,
+            "penalty": False,
+            "timestamp": datetime.utcnow().isoformat(),
+            "game_mode": "classic"
+        }
+        
+        return self.run_test(
+            "Submit Classic Mode Score",
+            "POST",
+            "api/scores",
+            200,
+            data=test_score
+        )
+
+    def test_submit_sequence_mode_score(self):
+        """Test submitting a sequence mode score"""
+        test_score = {
+            "player": "0x2222222222222222222222222222222222222222",
+            "username": "SequencePlayer",
+            "time": 1500,
+            "penalty": False,
+            "timestamp": datetime.utcnow().isoformat(),
+            "game_mode": "sequence",
+            "sequence_times": [300, 250, 400, 350, 200],
+            "total_targets": 5
+        }
+        
+        return self.run_test(
+            "Submit Sequence Mode Score",
+            "POST",
+            "api/scores",
+            200,
+            data=test_score
+        )
+
+    def test_submit_endurance_mode_score(self):
+        """Test submitting an endurance mode score"""
+        test_score = {
+            "player": "0x3333333333333333333333333333333333333333",
+            "username": "EndurancePlayer",
+            "time": 60000,  # 60 seconds
+            "penalty": False,
+            "timestamp": datetime.utcnow().isoformat(),
+            "game_mode": "endurance",
+            "hits_count": 45,
+            "total_targets": 50
+        }
+        
+        return self.run_test(
+            "Submit Endurance Mode Score",
+            "POST",
+            "api/scores",
+            200,
+            data=test_score
+        )
+
+    def test_submit_precision_mode_score(self):
+        """Test submitting a precision mode score"""
+        test_score = {
+            "player": "0x4444444444444444444444444444444444444444",
+            "username": "PrecisionPlayer",
+            "time": 800,
+            "penalty": False,
+            "timestamp": datetime.utcnow().isoformat(),
+            "game_mode": "precision",
+            "accuracy": 92.5,
+            "total_targets": 10
+        }
+        
+        return self.run_test(
+            "Submit Precision Mode Score",
+            "POST",
+            "api/scores",
+            200,
+            data=test_score
+        )
+
+    def test_leaderboard_classic_mode(self):
+        """Test getting leaderboard filtered by classic mode"""
+        return self.run_test(
+            "Get Classic Mode Leaderboard",
+            "GET",
+            "api/leaderboard",
+            200,
+            params={"game_mode": "classic", "limit": 10}
+        )
+
+    def test_leaderboard_sequence_mode(self):
+        """Test getting leaderboard filtered by sequence mode"""
+        return self.run_test(
+            "Get Sequence Mode Leaderboard",
+            "GET",
+            "api/leaderboard",
+            200,
+            params={"game_mode": "sequence", "limit": 10}
+        )
+
+    def test_leaderboard_endurance_mode(self):
+        """Test getting leaderboard filtered by endurance mode"""
+        return self.run_test(
+            "Get Endurance Mode Leaderboard",
+            "GET",
+            "api/leaderboard",
+            200,
+            params={"game_mode": "endurance", "limit": 10}
+        )
+
+    def test_leaderboard_precision_mode(self):
+        """Test getting leaderboard filtered by precision mode"""
+        return self.run_test(
+            "Get Precision Mode Leaderboard",
+            "GET",
+            "api/leaderboard",
+            200,
+            params={"game_mode": "precision", "limit": 10}
+        )
+
+    def test_backward_compatibility_score(self):
+        """Test submitting score without game_mode (backward compatibility)"""
+        test_score = {
+            "player": "0x5555555555555555555555555555555555555555",
+            "username": "BackwardCompatPlayer",
+            "time": 300,
+            "penalty": False,
+            "timestamp": datetime.utcnow().isoformat()
+            # No game_mode field - should default to "classic"
+        }
+        
+        return self.run_test(
+            "Submit Score (Backward Compatibility)",
+            "POST",
+            "api/scores",
+            200,
+            data=test_score
+        )
+
+    def test_mixed_mode_leaderboard(self):
+        """Test getting leaderboard without game_mode filter (all modes)"""
+        return self.run_test(
+            "Get Mixed Mode Leaderboard",
+            "GET",
+            "api/leaderboard",
+            200,
+            params={"limit": 20}
+        )
+
 def main():
     print("🚀 Starting Irys Reflex API Tests...")
     print("=" * 50)
