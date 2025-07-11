@@ -225,6 +225,12 @@ body {
   animation: pulse 2s infinite;
 }
 
+.game-circle.precision {
+  width: 150px;
+  height: 150px;
+  font-size: 0.9rem;
+}
+
 .game-circle.flashed {
   background: var(--irys-cyan);
   color: var(--black-core);
