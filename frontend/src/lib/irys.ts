@@ -1,16 +1,8 @@
 import { Irys } from "@irys/sdk";
 
-let irys: Irys | null = null;
+let irys = null;
 
-export interface ScoreData {
-  player: string;
-  username: string;
-  time: number;
-  penalty: boolean;
-  timestamp: number;
-}
-
-export async function getIrys(): Promise<Irys> {
+export async function getIrys() {
   if (!irys) {
     try {
       // Get environment variables
@@ -41,7 +33,7 @@ export async function getIrys(): Promise<Irys> {
   return irys;
 }
 
-export async function uploadScore(scoreData: ScoreData): Promise<string> {
+export async function uploadScore(scoreData) {
   try {
     const irysInstance = await getIrys();
     
@@ -64,7 +56,7 @@ export async function uploadScore(scoreData: ScoreData): Promise<string> {
   }
 }
 
-export async function getWalletAddress(): Promise<string> {
+export async function getWalletAddress() {
   try {
     const irysInstance = await getIrys();
     return irysInstance.address;
@@ -74,7 +66,7 @@ export async function getWalletAddress(): Promise<string> {
   }
 }
 
-export function getIrysExplorerUrl(txId: string): string {
+export function getIrysExplorerUrl(txId) {
   const gateway = process.env.REACT_APP_GATEWAY_URL || "https://gateway.irys.xyz";
   return `${gateway}/${txId}`;
 }
