@@ -92,13 +92,97 @@ const App = () => {
       return;
     }
 
+    // Reset all game state
     setGameState('ready');
     setPenalty(false);
     setReactionTime(null);
     setGameStarted(true);
     
+    // Reset mode-specific state
+    setSequenceCount(0);
+    setSequenceTimes([]);
+    setEnduranceScore(0);
+    setEnduranceTimeLeft(60);
+    setPrecisionMissed(0);
+    setPrecisionHits(0);
+    
+    // Start game based on selected mode
+    switch (selectedGameMode) {
+      case 'classic':
+        startClassicGame();
+        break;
+      case 'sequence':
+        startSequenceGame();
+        break;
+      case 'endurance':
+        startEnduranceGame();
+        break;
+      case 'precision':
+        startPrecisionGame();
+        break;
+      default:
+        startClassicGame();
+    }
+  };
+
+  const startClassicGame = () => {
     // Random delay between 1-5 seconds
     const delay = Math.random() * 4000 + 1000;
+    
+    timeoutRef.current = setTimeout(() => {
+      setGameState('flashed');
+      startTimeRef.current = Date.now();
+      playPingSound();
+    }, delay);
+  };
+
+  const startSequenceGame = () => {
+    setSequenceCount(0);
+    setSequenceTimes([]);
+    // Start first target
+    const delay = Math.random() * 2000 + 1000;
+    
+    timeoutRef.current = setTimeout(() => {
+      setGameState('flashed');
+      startTimeRef.current = Date.now();
+      playPingSound();
+    }, delay);
+  };
+
+  const startEnduranceGame = () => {
+    setEnduranceScore(0);
+    setEnduranceTimeLeft(60);
+    
+    // Start countdown timer
+    const timer = setInterval(() => {
+      setEnduranceTimeLeft(prev => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setGameState('finished');
+          setReactionTime(enduranceScore); // Use score as "time" for display
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    setEnduranceTimer(timer);
+    
+    // Start first target
+    const delay = Math.random() * 2000 + 500;
+    timeoutRef.current = setTimeout(() => {
+      setGameState('flashed');
+      startTimeRef.current = Date.now();
+      playPingSound();
+    }, delay);
+  };
+
+  const startPrecisionGame = () => {
+    setPrecisionMissed(0);
+    setPrecisionHits(0);
+    
+    // Start with slightly longer delay for precision mode
+    const delay = Math.random() * 3000 + 1500;
     
     timeoutRef.current = setTimeout(() => {
       setGameState('flashed');
