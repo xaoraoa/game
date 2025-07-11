@@ -1,27 +1,60 @@
 import React, { useState, useEffect, useRef } from 'react';
+import toast, { Toaster } from 'react-hot-toast';
+import { uploadScore, getWalletAddress, getIrysExplorerUrl } from './lib/irys';
 import './App.css';
 
-const App = () => {
-  const [gameState, setGameState] = useState('waiting'); // waiting, ready, flashed, finished
-  const [reactionTime, setReactionTime] = useState(null);
-  const [penalty, setPenalty] = useState(false);
-  const [walletAddress, setWalletAddress] = useState('');
-  const [isConnected, setIsConnected] = useState(false);
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [uploading, setUploading] = useState(false);
-  const [lastTxId, setLastTxId] = useState('');
+interface LeaderboardEntry {
+  id: string;
+  player: string;
+  username: string;
+  time: number;
+  penalty: boolean;
+  timestamp: string;
+  tx_id?: string;
+  verified: boolean;
+}
+
+const App: React.FC = () => {
+  const [gameState, setGameState] = useState<'waiting' | 'ready' | 'flashed' | 'finished'>('waiting');
+  const [reactionTime, setReactionTime] = useState<number | null>(null);
+  const [penalty, setPenalty] = useState<boolean>(false);
+  const [username, setUsername] = useState<string>('');
+  const [walletAddress, setWalletAddress] = useState<string>('');
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [uploading, setUploading] = useState<boolean>(false);
+  const [lastTxId, setLastTxId] = useState<string>('');
+  const [gameStarted, setGameStarted] = useState<boolean>(false);
   
-  const gameRef = useRef(null);
-  const startTimeRef = useRef(null);
-  const timeoutRef = useRef(null);
-  const audioContextRef = useRef(null);
+  const gameRef = useRef<HTMLDivElement>(null);
+  const startTimeRef = useRef<number | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
 
   // Initialize Web Audio API
   useEffect(() => {
-    audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+  }, []);
+
+  // Initialize wallet address on component mount
+  useEffect(() => {
+    const initializeWallet = async () => {
+      try {
+        const address = await getWalletAddress();
+        setWalletAddress(address);
+        toast.success('Wallet connected successfully!');
+      } catch (error) {
+        console.error('Failed to get wallet address:', error);
+        toast.error('Failed to connect to wallet. Please check your configuration.');
+      }
+    };
+
+    initializeWallet();
+    fetchLeaderboard();
   }, []);
 
   const playPingSound = () => {
+    if (!audioContextRef.current) return;
+    
     const audioContext = audioContextRef.current;
     const oscillator = audioContext.createOscillator();
     const gainNode = audioContext.createGain();
@@ -39,25 +72,16 @@ const App = () => {
     oscillator.stop(audioContext.currentTime + 0.05);
   };
 
-  const connectWallet = async () => {
-    if (window.ethereum) {
-      try {
-        const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
-        setWalletAddress(accounts[0]);
-        setIsConnected(true);
-      } catch (error) {
-        console.error("Error connecting wallet:", error);
-        alert("Failed to connect wallet");
-      }
-    } else {
-      alert('Please install MetaMask!');
-    }
-  };
-
   const startGame = () => {
+    if (!username.trim()) {
+      toast.error('Please enter a username before starting the game!');
+      return;
+    }
+
     setGameState('ready');
     setPenalty(false);
     setReactionTime(null);
+    setGameStarted(true);
     
     // Random delay between 1-5 seconds
     const delay = Math.random() * 4000 + 1000;
@@ -75,40 +99,48 @@ const App = () => {
       setPenalty(true);
       setReactionTime(500); // 500ms penalty
       setGameState('finished');
-      clearTimeout(timeoutRef.current);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
     } else if (gameState === 'flashed') {
       // Calculate reaction time
       const endTime = Date.now();
-      const reaction = endTime - startTimeRef.current;
+      const reaction = endTime - (startTimeRef.current || 0);
       setReactionTime(reaction);
       setGameState('finished');
     }
   };
 
   const uploadToIrys = async () => {
-    if (!isConnected) {
-      alert('Please connect your wallet first');
+    if (!username.trim()) {
+      toast.error('Please enter a username');
+      return;
+    }
+
+    if (!walletAddress) {
+      toast.error('Wallet not connected');
+      return;
+    }
+
+    if (reactionTime === null) {
+      toast.error('No reaction time recorded');
       return;
     }
 
     setUploading(true);
     
     try {
-      // Mock Irys upload for now - in a real implementation, you'd use the Irys SDK
       const scoreData = {
         player: walletAddress,
+        username: username.trim(),
         time: reactionTime,
         penalty: penalty,
-        timestamp: new Date().toISOString(),
-        gameType: "IrysReflex"
+        timestamp: Date.now()
       };
 
-      // Simulate upload delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock transaction ID
-      const mockTxId = 'mock_tx_' + Math.random().toString(36).substr(2, 9);
-      setLastTxId(mockTxId);
+      // Upload to Irys
+      const txId = await uploadScore(scoreData);
+      setLastTxId(txId);
 
       // Submit to backend
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/scores`, {
@@ -118,23 +150,24 @@ const App = () => {
         },
         body: JSON.stringify({
           player: walletAddress,
+          username: username.trim(),
           time: reactionTime,
           penalty: penalty,
-          timestamp: scoreData.timestamp,
-          tx_id: mockTxId
+          timestamp: new Date().toISOString(),
+          tx_id: txId
         }),
       });
 
       if (response.ok) {
         const result = await response.json();
-        alert(`✅ Score saved to Irys! ${result.verified ? 'Verified' : 'Pending verification'}`);
+        toast.success(`✅ Score saved to Irys! ${result.verified ? 'Verified' : 'Pending verification'}`);
         fetchLeaderboard();
       } else {
-        throw new Error('Failed to save score');
+        throw new Error('Failed to save score to backend');
       }
     } catch (error) {
       console.error("Error uploading to Irys:", error);
-      alert("Failed to upload score: " + error.message);
+      toast.error("Failed to upload score: " + (error as Error).message);
     } finally {
       setUploading(false);
     }
@@ -152,17 +185,37 @@ const App = () => {
     }
   };
 
-  useEffect(() => {
-    fetchLeaderboard();
-  }, []);
-
   const getDisplayTime = () => {
     if (penalty) return `${reactionTime}ms (+ 500ms penalty)`;
     return `${reactionTime}ms`;
   };
 
+  const resetGame = () => {
+    setGameState('waiting');
+    setGameStarted(false);
+    setPenalty(false);
+    setReactionTime(null);
+    setLastTxId('');
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  };
+
   return (
     <div className="app">
+      <Toaster 
+        position="top-center"
+        toastOptions={{
+          duration: 4000,
+          style: {
+            background: 'rgba(255, 255, 255, 0.1)',
+            color: '#F8F8FF',
+            border: '1px solid rgba(0, 255, 209, 0.3)',
+            backdropFilter: 'blur(10px)',
+          },
+        }}
+      />
+      
       <div className="container">
         <header className="header">
           <h1 className="title">
@@ -172,15 +225,20 @@ const App = () => {
         </header>
 
         <div className="wallet-section">
-          {!isConnected ? (
-            <button onClick={connectWallet} className="connect-btn">
-              Connect Wallet
-            </button>
-          ) : (
-            <div className="wallet-info">
-              <p>Connected: {walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</p>
-            </div>
-          )}
+          <div className="wallet-info">
+            <p><strong>Wallet:</strong> {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Not connected'}</p>
+          </div>
+          
+          <div className="username-section">
+            <input
+              type="text"
+              placeholder="Enter your username"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              className="username-input"
+              maxLength={20}
+            />
+          </div>
         </div>
 
         <div className="game-section">
@@ -213,7 +271,10 @@ const App = () => {
                 <button onClick={startGame} className="restart-btn">
                   Play Again
                 </button>
-                {isConnected && (
+                <button onClick={resetGame} className="reset-btn">
+                  Reset
+                </button>
+                {walletAddress && (
                   <button 
                     onClick={uploadToIrys} 
                     disabled={uploading}
@@ -237,8 +298,11 @@ const App = () => {
                 {leaderboard.map((entry, index) => (
                   <div key={entry.id} className="leaderboard-entry">
                     <div className="rank">#{index + 1}</div>
-                    <div className="player">
-                      {entry.player.slice(0, 6)}...{entry.player.slice(-4)}
+                    <div className="player-info">
+                      <div className="username">{entry.username}</div>
+                      <div className="address">
+                        {entry.player.slice(0, 6)}...{entry.player.slice(-4)}
+                      </div>
                     </div>
                     <div className="time">
                       {entry.time}ms {entry.penalty && '(penalty)'}
@@ -257,7 +321,7 @@ const App = () => {
           <div className="tx-info">
             <p>Last transaction: {lastTxId}</p>
             <a 
-              href={`https://devnet.irys.xyz/${lastTxId}`}
+              href={getIrysExplorerUrl(lastTxId)}
               target="_blank"
               rel="noopener noreferrer"
               className="tx-link"
