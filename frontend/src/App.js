@@ -368,9 +368,11 @@ const App = () => {
     }
   };
 
-  const fetchLeaderboard = async () => {
+  const fetchLeaderboard = async (gameMode = null) => {
     try {
-      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/leaderboard`);
+      const mode = gameMode || selectedGameMode;
+      const url = `${process.env.REACT_APP_BACKEND_URL}/api/leaderboard${mode ? `?game_mode=${mode}` : ''}`;
+      const response = await fetch(url);
       if (response.ok) {
         const data = await response.json();
         setLeaderboard(data);
@@ -381,8 +383,22 @@ const App = () => {
   };
 
   const getDisplayTime = () => {
+    if (selectedGameMode === 'endurance') {
+      return `${enduranceScore} hits`;
+    } else if (selectedGameMode === 'sequence') {
+      return `${reactionTime}ms avg (${sequenceTimes.length}/${totalSequenceTargets})`;
+    } else if (selectedGameMode === 'precision') {
+      const accuracy = precisionHits / (precisionHits + precisionMissed) * 100;
+      return `${reactionTime}ms (${accuracy.toFixed(1)}% accuracy)`;
+    }
+    
     if (penalty) return `${reactionTime}ms (+ 500ms penalty)`;
     return `${reactionTime}ms`;
+  };
+
+  const getGameModeDisplayName = (mode) => {
+    const gameModeObj = gameModes.find(gm => gm.id === mode);
+    return gameModeObj ? gameModeObj.name : mode;
   };
 
   const resetGame = () => {
