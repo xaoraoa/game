@@ -14,12 +14,12 @@ export async function getIrys(): Promise<Irys> {
   if (!irys) {
     try {
       // Get environment variables
-      const network = process.env.VITE_IRYS_RPC_URL || "https://devnet.irys.xyz";
-      const gateway = process.env.VITE_GATEWAY_URL || "https://gateway.irys.xyz";
-      const privateKey = process.env.VITE_PRIVATE_KEY;
+      const network = process.env.REACT_APP_IRYS_RPC_URL || "https://devnet.irys.xyz";
+      const gateway = process.env.REACT_APP_GATEWAY_URL || "https://gateway.irys.xyz";
+      const privateKey = process.env.REACT_APP_PRIVATE_KEY;
 
       if (!privateKey) {
-        throw new Error("VITE_PRIVATE_KEY environment variable is required");
+        throw new Error("REACT_APP_PRIVATE_KEY environment variable is required");
       }
 
       // Connect to Irys
@@ -75,6 +75,6 @@ export async function getWalletAddress(): Promise<string> {
 }
 
 export function getIrysExplorerUrl(txId: string): string {
-  const gateway = process.env.VITE_GATEWAY_URL || "https://gateway.irys.xyz";
+  const gateway = process.env.REACT_APP_GATEWAY_URL || "https://gateway.irys.xyz";
   return `${gateway}/${txId}`;
 }
