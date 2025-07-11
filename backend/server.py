@@ -83,8 +83,19 @@ async def submit_score(score: ScoreSubmission):
             "penalty": score.penalty,
             "timestamp": score.timestamp,
             "verified": False,
-            "created_at": datetime.utcnow()
+            "created_at": datetime.utcnow(),
+            "game_mode": score.game_mode
         }
+        
+        # Add mode-specific fields if provided
+        if score.hits_count is not None:
+            score_doc["hits_count"] = score.hits_count
+        if score.accuracy is not None:
+            score_doc["accuracy"] = score.accuracy
+        if score.sequence_times is not None:
+            score_doc["sequence_times"] = score.sequence_times
+        if score.total_targets is not None:
+            score_doc["total_targets"] = score.total_targets
         
         # Only add tx_id if it's provided (to avoid null values in unique index)
         if score.tx_id:
