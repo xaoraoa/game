@@ -1,6 +1,6 @@
 services:
   # Frontend Static Site Service
-  - type: web
+  - type: static
     name: irys-reflex-frontend
     env: static
     region: oregon
