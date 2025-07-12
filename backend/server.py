@@ -437,6 +437,56 @@ async def get_network_info():
 # ACHIEVEMENTS SYSTEM
 # ============================
 
+@app.get("/api/achievements/types")
+async def get_achievement_types():
+    """Get all available achievement types"""
+    return {
+        "types": [
+            {
+                "id": "speed_demon",
+                "title": "Speed Demon",
+                "description": "React in under 200ms",
+                "icon": "⚡",
+                "condition": "reaction_time < 200"
+            },
+            {
+                "id": "consistency_master",
+                "title": "Consistency Master",
+                "description": "10 games within 50ms variance",
+                "icon": "🎯",
+                "condition": "variance < 50 over 10 games"
+            },
+            {
+                "id": "streak_legend",
+                "title": "Streak Legend",
+                "description": "Play 7 days in a row",
+                "icon": "🔥",
+                "condition": "daily_streak >= 7"
+            },
+            {
+                "id": "endurance_champion",
+                "title": "Endurance Champion",
+                "description": "Hit 50+ targets in endurance mode",
+                "icon": "💪",
+                "condition": "endurance_hits >= 50"
+            },
+            {
+                "id": "precision_master",
+                "title": "Precision Master",
+                "description": "95%+ accuracy in precision mode",
+                "icon": "🎪",
+                "condition": "precision_accuracy >= 95"
+            },
+            {
+                "id": "sequence_pro",
+                "title": "Sequence Pro",
+                "description": "Complete 10-target sequence flawlessly",
+                "icon": "🔄",
+                "condition": "sequence_completion == 10"
+            }
+        ]
+    }
+
 @app.get("/api/achievements/{player_address}")
 async def get_player_achievements(player_address: str):
     """Get all achievements for a player"""
