@@ -1,0 +1,55 @@
+services:
+  # Frontend Static Site Service
+  - type: web
+    name: irys-reflex-frontend
+    env: static
+    region: oregon
+    plan: free
+    buildCommand: cd frontend && yarn install && yarn build
+    staticPublishPath: frontend/build
+    headers:
+      - path: /*
+        name: X-Robots-Tag
+        value: noindex
+    envVars:
+      - key: REACT_APP_BACKEND_URL
+        value: https://irys-reflex-backend.onrender.com
+      - key: REACT_APP_IRYS_RPC_URL
+        value: https://rpc.devnet.irys.xyz/v1
+      - key: REACT_APP_GATEWAY_URL
+        value: https://devnet.irys.xyz
+      - key: REACT_APP_PRIVATE_KEY
+        sync: false  # Set manually in dashboard
+      - key: DISABLE_HOT_RELOAD
+        value: "true"
+      - key: GENERATE_SOURCEMAP
+        value: "false"
+      - key: NODE_OPTIONS
+        value: "--max-old-space-size=8192"
+
+  # Backend Web Service
+  - type: web
+    name: irys-reflex-backend
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: cd backend && pip install -r requirements.txt
+    startCommand: uvicorn index:handler --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: MONGO_URL
+        sync: false  # Set manually in dashboard - use MongoDB Atlas connection string
+      - key: DB_NAME
+        value: irys_reflex_prod
+      - key: ENVIRONMENT
+        value: production
+      - key: PORT
+        value: "10000"
+
+databases:
+  # Note: Using external MongoDB Atlas is recommended for production
+  # You can also use Render's PostgreSQL if you want to migrate from MongoDB
+  # - name: irys-reflex-db
+  #   databaseName: irys_reflex
+  #   user: irys_admin
+  #   plan: free
