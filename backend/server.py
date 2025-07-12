@@ -134,17 +134,26 @@ async def submit_score(score: ScoreSubmission):
             except:
                 score_doc["verified"] = False
         
-        # Insert the score
-        result = await scores_collection.insert_one(score_doc)
-        
-        if result.inserted_id:
+        # Insert the score (only if database is available)
+        if scores_collection is not None:
+            result = await scores_collection.insert_one(score_doc)
+            
+            if result.inserted_id:
+                return {
+                    "status": "success", 
+                    "id": score_id,
+                    "verified": score_doc["verified"]
+                }
+            else:
+                raise HTTPException(status_code=500, detail="Failed to store score")
+        else:
+            # Database not available - return success but don't store
             return {
                 "status": "success", 
                 "id": score_id,
-                "verified": score_doc["verified"]
+                "verified": score_doc["verified"],
+                "note": "Score not stored - database not configured"
             }
-        
-        raise HTTPException(status_code=500, detail="Failed to store score")
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
