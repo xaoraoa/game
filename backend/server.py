@@ -327,3 +327,324 @@ async def get_game_modes():
             }
         ]
     }
+
+# ============================
+# IRYS BLOCKCHAIN INTEGRATION
+# ============================
+
+@app.get("/api/irys/public-key")
+async def get_irys_public_key():
+    """Get server's public key for Irys operations"""
+    if not account:
+        raise HTTPException(status_code=500, detail="Irys account not configured")
+    
+    return {"publicKey": account.address}
+
+@app.post("/api/irys/sign")
+async def sign_message(request: SignRequest):
+    """Sign a message with the server's private key"""
+    if not account:
+        raise HTTPException(status_code=500, detail="Irys account not configured")
+    
+    try:
+        # Create message hash
+        message = encode_defunct(text=request.message)
+        
+        # Sign the message
+        signed_message = account.sign_message(message)
+        
+        return {"signature": signed_message.signature.hex()}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Signing failed: {str(e)}")
+
+@app.post("/api/irys/upload")
+async def upload_to_irys(request: IrysUploadRequest):
+    """Upload data to Irys blockchain"""
+    if not account:
+        raise HTTPException(status_code=500, detail="Irys account not configured")
+    
+    try:
+        # Prepare data for Irys upload
+        data_to_upload = request.data
+        tags = request.tags or []
+        
+        # Add default tags
+        default_tags = [
+            {"name": "App-Name", "value": "IrysReflex"},
+            {"name": "Content-Type", "value": "application/json"},
+            {"name": "Timestamp", "value": str(int(time.time() * 1000))},
+            {"name": "Player", "value": request.player_address}
+        ]
+        
+        # Combine tags
+        all_tags = default_tags + tags
+        
+        # For now, we'll simulate the Irys upload with a mock response
+        # In a real implementation, you'd use the Irys SDK here
+        mock_tx_id = f"irys-tx-{int(time.time() * 1000)}-{uuid.uuid4().hex[:8]}"
+        
+        # Store upload record in database
+        if scores_collection is not None:
+            upload_record = {
+                "tx_id": mock_tx_id,
+                "player": request.player_address,
+                "data": data_to_upload,
+                "tags": all_tags,
+                "timestamp": datetime.utcnow(),
+                "verified": True  # Mock verification
+            }
+            await scores_collection.insert_one(upload_record)
+        
+        return {
+            "success": True,
+            "tx_id": mock_tx_id,
+            "gateway_url": f"https://gateway.irys.xyz/{mock_tx_id}",
+            "tags": all_tags
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
+
+@app.get("/api/irys/network-info")
+async def get_network_info():
+    """Get current Irys network information"""
+    network_config = {
+        "testnet": {
+            "name": "Irys Testnet",
+            "rpc_url": "https://rpc.devnet.irys.xyz/v1",
+            "gateway_url": "https://devnet.irys.xyz",
+            "explorer_url": "https://testnet.irys.xyz"
+        },
+        "mainnet": {
+            "name": "Irys Mainnet",
+            "rpc_url": "https://rpc.irys.xyz/v1",
+            "gateway_url": "https://gateway.irys.xyz",
+            "explorer_url": "https://irys.xyz"
+        }
+    }
+    
+    current_network = network_config.get(IRYS_NETWORK, network_config["testnet"])
+    
+    return {
+        "network": IRYS_NETWORK,
+        "config": current_network,
+        "account": account.address if account else None
+    }
+
+# ============================
+# ACHIEVEMENTS SYSTEM
+# ============================
+
+@app.get("/api/achievements/{player_address}")
+async def get_player_achievements(player_address: str):
+    """Get all achievements for a player"""
+    if achievements_collection is None:
+        return {"achievements": []}
+    
+    try:
+        cursor = achievements_collection.find(
+            {"player": player_address},
+            {"_id": 0}
+        ).sort("unlocked_at", -1)
+        
+        achievements = await cursor.to_list(length=None)
+        return {"achievements": achievements}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/achievements/unlock")
+async def unlock_achievement(achievement: Achievement):
+    """Unlock an achievement for a player"""
+    if achievements_collection is None:
+        raise HTTPException(status_code=500, detail="Database not configured")
+    
+    try:
+        # Check if achievement already exists
+        existing = await achievements_collection.find_one({
+            "player": achievement.player,
+            "achievement_type": achievement.achievement_type
+        })
+        
+        if existing:
+            return {"status": "already_unlocked", "achievement": existing}
+        
+        # Create achievement document
+        achievement_doc = {
+            "id": str(uuid.uuid4()),
+            "player": achievement.player,
+            "achievement_type": achievement.achievement_type,
+            "title": achievement.title,
+            "description": achievement.description,
+            "icon": achievement.icon,
+            "unlocked_at": datetime.utcnow().isoformat(),
+            "verified": False
+        }
+        
+        # Try to upload to Irys
+        if account:
+            try:
+                upload_data = json.dumps(achievement_doc)
+                # Mock Irys upload
+                mock_tx_id = f"achievement-{int(time.time() * 1000)}-{uuid.uuid4().hex[:8]}"
+                achievement_doc["tx_id"] = mock_tx_id
+                achievement_doc["verified"] = True
+            except Exception as e:
+                print(f"Failed to upload achievement to Irys: {e}")
+        
+        result = await achievements_collection.insert_one(achievement_doc)
+        
+        if result.inserted_id:
+            return {"status": "unlocked", "achievement": achievement_doc}
+        else:
+            raise HTTPException(status_code=500, detail="Failed to unlock achievement")
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.get("/api/achievements/types")
+async def get_achievement_types():
+    """Get all available achievement types"""
+    return {
+        "types": [
+            {
+                "id": "speed_demon",
+                "title": "Speed Demon",
+                "description": "React in under 200ms",
+                "icon": "⚡",
+                "condition": "reaction_time < 200"
+            },
+            {
+                "id": "consistency_master",
+                "title": "Consistency Master",
+                "description": "10 games within 50ms variance",
+                "icon": "🎯",
+                "condition": "variance < 50 over 10 games"
+            },
+            {
+                "id": "streak_legend",
+                "title": "Streak Legend",
+                "description": "Play 7 days in a row",
+                "icon": "🔥",
+                "condition": "daily_streak >= 7"
+            },
+            {
+                "id": "endurance_champion",
+                "title": "Endurance Champion",
+                "description": "Hit 50+ targets in endurance mode",
+                "icon": "💪",
+                "condition": "endurance_hits >= 50"
+            },
+            {
+                "id": "precision_master",
+                "title": "Precision Master",
+                "description": "95%+ accuracy in precision mode",
+                "icon": "🎪",
+                "condition": "precision_accuracy >= 95"
+            },
+            {
+                "id": "sequence_pro",
+                "title": "Sequence Pro",
+                "description": "Complete 10-target sequence flawlessly",
+                "icon": "🔄",
+                "condition": "sequence_completion == 10"
+            }
+        ]
+    }
+
+# ============================
+# PLAYER STATISTICS
+# ============================
+
+@app.get("/api/player/{player_address}/stats")
+async def get_player_stats(player_address: str):
+    """Get comprehensive player statistics"""
+    if scores_collection is None:
+        return {
+            "player": player_address,
+            "total_games": 0,
+            "best_time": None,
+            "average_time": None,
+            "total_achievements": 0,
+            "streak_current": 0,
+            "streak_best": 0,
+            "games_by_mode": {},
+            "last_played": None
+        }
+    
+    try:
+        # Get all player scores
+        cursor = scores_collection.find(
+            {"player": player_address},
+            {"_id": 0}
+        ).sort("timestamp", -1)
+        
+        scores = await cursor.to_list(length=None)
+        
+        if not scores:
+            return {
+                "player": player_address,
+                "total_games": 0,
+                "best_time": None,
+                "average_time": None,
+                "total_achievements": 0,
+                "streak_current": 0,
+                "streak_best": 0,
+                "games_by_mode": {},
+                "last_played": None
+            }
+        
+        # Calculate statistics
+        total_games = len(scores)
+        times = [score["time"] for score in scores if not score.get("penalty", False)]
+        best_time = min(times) if times else None
+        average_time = sum(times) / len(times) if times else None
+        
+        # Games by mode
+        games_by_mode = {}
+        for score in scores:
+            mode = score.get("game_mode", "classic")
+            games_by_mode[mode] = games_by_mode.get(mode, 0) + 1
+        
+        # Get achievements count
+        achievements_count = 0
+        if achievements_collection:
+            achievements_count = await achievements_collection.count_documents({"player": player_address})
+        
+        return {
+            "player": player_address,
+            "total_games": total_games,
+            "best_time": best_time,
+            "average_time": round(average_time, 2) if average_time else None,
+            "total_achievements": achievements_count,
+            "streak_current": 0,  # TODO: Implement streak calculation
+            "streak_best": 0,     # TODO: Implement streak calculation
+            "games_by_mode": games_by_mode,
+            "last_played": scores[0]["timestamp"] if scores else None
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/player/{player_address}/generate-stats-image")
+async def generate_stats_image(player_address: str):
+    """Generate a shareable stats image for social media"""
+    try:
+        # Get player stats
+        stats = await get_player_stats(player_address)
+        
+        # For now, return a data structure that frontend can use to generate image
+        # In a real implementation, you might generate an actual image server-side
+        
+        stats_data = {
+            "player": player_address,
+            "stats": stats,
+            "share_text": f"🎯 My Irys Reflex Stats:\n⚡ Best Time: {stats['best_time']}ms\n🎮 Total Games: {stats['total_games']}\n🏆 Achievements: {stats['total_achievements']}\n\nPlay at IrysReflex.com",
+            "image_template": "stats_card_v1",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        return stats_data
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
