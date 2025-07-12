@@ -193,6 +193,15 @@ async def get_leaderboard(limit: int = 10, game_mode: Optional[str] = None):
 @app.get("/api/player/{player_address}")
 async def get_player_scores(player_address: str):
     try:
+        # Return empty if database not available
+        if scores_collection is None:
+            return {
+                "player": player_address,
+                "total_games": 0,
+                "best_score": None,
+                "scores": []
+            }
+            
         cursor = scores_collection.find(
             {"player": player_address},
             {"_id": 0, "created_at": 0}
