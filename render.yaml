@@ -1,7 +1,8 @@
 services:
   # Frontend Static Site Service
-  - type: static
+  - type: web
     name: irys-reflex-frontend
+    env: static
     buildCommand: cd frontend && yarn install && yarn build
     staticPublishPath: frontend/build
     headers:
