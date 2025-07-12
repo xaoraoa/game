@@ -343,6 +343,15 @@ class IrysReflexAPITester:
             params={"limit": 20}
         )
 
+    def test_health_check(self):
+        """Test health check endpoint for Render deployment"""
+        return self.run_test(
+            "Health Check Endpoint",
+            "GET",
+            "api/health",
+            200
+        )
+
 def main():
     print("🚀 Starting Enhanced Irys Reflex API Tests (Game Modes Feature)...")
     print("=" * 60)
