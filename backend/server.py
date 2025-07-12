@@ -27,9 +27,16 @@ app.add_middleware(
 # MongoDB connection
 MONGO_URL = os.environ.get('MONGO_URL')
 DB_NAME = os.environ.get('DB_NAME', 'irys_reflex')
-client = AsyncIOMotorClient(MONGO_URL)
-db = client[DB_NAME]
-scores_collection = db.scores
+
+if MONGO_URL:
+    client = AsyncIOMotorClient(MONGO_URL)
+    db = client[DB_NAME]
+    scores_collection = db.scores
+else:
+    client = None
+    db = None
+    scores_collection = None
+    print("WARNING: MONGO_URL not set. Database operations will be disabled.")
 
 class ScoreSubmission(BaseModel):
     player: str
