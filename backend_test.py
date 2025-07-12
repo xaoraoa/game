@@ -362,7 +362,11 @@ def main():
     # Run all tests in sequence
     print("\n📋 Running Backend API Tests:")
     
-    # Test 1: Game Modes API
+    # Test 1: Health Check for Render Deployment
+    print("\n🏥 Testing Health Check Endpoint...")
+    tester.test_health_check()
+    
+    # Test 2: Game Modes API
     print("\n🎮 Testing Game Modes API...")
     tester.test_get_game_modes()
     
