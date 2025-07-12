@@ -3,7 +3,6 @@ services:
   - type: web
     name: irys-reflex-frontend
     runtime: static
-    region: oregon
     plan: free
     buildCommand: cd frontend && yarn install && yarn build
     staticPublishPath: frontend/build
