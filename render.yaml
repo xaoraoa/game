@@ -2,8 +2,7 @@ services:
   # Frontend Static Site Service
   - type: web
     name: irys-reflex-frontend
-    runtime: static
-    plan: free
+    env: static
     buildCommand: cd frontend && yarn install && yarn build
     staticPublishPath: frontend/build
     headers:
