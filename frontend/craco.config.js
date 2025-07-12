@@ -1,5 +1,6 @@
 // Load configuration from environment or config file
 const path = require('path');
+const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
 
 // Environment variable overrides
 const config = {
@@ -13,36 +14,8 @@ module.exports = {
     },
     configure: (webpackConfig) => {
       
-      // Add polyfills for Node.js core modules
-      webpackConfig.resolve.fallback = {
-        ...webpackConfig.resolve.fallback,
-        "crypto": require.resolve("crypto-browserify"),
-        "stream": require.resolve("stream-browserify"),
-        "assert": require.resolve("assert"),
-        "https": require.resolve("https-browserify"),
-        "os": require.resolve("os-browserify/browser"),
-        "url": require.resolve("url"),
-        "path": require.resolve("path-browserify"),
-        "process": require.resolve("process/browser"),
-        "buffer": require.resolve("buffer"),
-        "fs": false,
-        "net": false,
-        "tls": false,
-      };
-
-      // Add global process and Buffer
-      webpackConfig.plugins.push(
-        new (require('webpack')).ProvidePlugin({
-          process: 'process/browser',
-          Buffer: ['buffer', 'Buffer'],
-        })
-      );
-      
-      // Fix module resolution for ESM modules
-      webpackConfig.resolve.extensionAlias = {
-        '.js': ['.js', '.ts', '.tsx'],
-        '.mjs': ['.mjs', '.js', '.ts', '.tsx']
-      };
+      // Add the NodePolyfillPlugin
+      webpackConfig.plugins.push(new NodePolyfillPlugin());
       
       // Disable hot reload completely if environment variable is set
       if (config.disableHotReload) {
