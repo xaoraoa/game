@@ -352,6 +352,193 @@ class IrysReflexAPITester:
             200
         )
 
+    # ============================
+    # IRYS BLOCKCHAIN INTEGRATION TESTS
+    # ============================
+
+    def test_irys_public_key(self):
+        """Test getting Irys public key"""
+        return self.run_test(
+            "Get Irys Public Key",
+            "GET",
+            "api/irys/public-key",
+            200
+        )
+
+    def test_irys_sign_message(self):
+        """Test signing a message with Irys private key"""
+        test_message = {
+            "message": "Test message for signing"
+        }
+        
+        return self.run_test(
+            "Sign Message with Irys Key",
+            "POST",
+            "api/irys/sign",
+            200,
+            data=test_message
+        )
+
+    def test_irys_upload_data(self):
+        """Test uploading data to Irys blockchain"""
+        test_upload = {
+            "data": json.dumps({
+                "type": "game_score",
+                "player": "0x1234567890123456789012345678901234567890",
+                "score": 250,
+                "timestamp": datetime.utcnow().isoformat()
+            }),
+            "tags": [
+                {"name": "Game-Type", "value": "reaction-time"},
+                {"name": "Score", "value": "250"}
+            ],
+            "player_address": "0x1234567890123456789012345678901234567890"
+        }
+        
+        return self.run_test(
+            "Upload Data to Irys",
+            "POST",
+            "api/irys/upload",
+            200,
+            data=test_upload
+        )
+
+    def test_irys_network_info(self):
+        """Test getting Irys network information"""
+        return self.run_test(
+            "Get Irys Network Info",
+            "GET",
+            "api/irys/network-info",
+            200
+        )
+
+    # ============================
+    # ACHIEVEMENT SYSTEM TESTS
+    # ============================
+
+    def test_get_achievement_types(self):
+        """Test getting all available achievement types"""
+        return self.run_test(
+            "Get Achievement Types",
+            "GET",
+            "api/achievements/types",
+            200
+        )
+
+    def test_get_player_achievements_empty(self):
+        """Test getting achievements for a player with no achievements"""
+        player_address = "0x9999999999999999999999999999999999999999"
+        return self.run_test(
+            "Get Player Achievements (Empty)",
+            "GET",
+            f"api/achievements/{player_address}",
+            200
+        )
+
+    def test_unlock_speed_demon_achievement(self):
+        """Test unlocking a speed demon achievement"""
+        achievement_data = {
+            "id": str(uuid.uuid4()),
+            "player": "0x1111111111111111111111111111111111111111",
+            "achievement_type": "speed_demon",
+            "title": "Speed Demon",
+            "description": "React in under 200ms",
+            "icon": "⚡",
+            "unlocked_at": datetime.utcnow().isoformat()
+        }
+        
+        return self.run_test(
+            "Unlock Speed Demon Achievement",
+            "POST",
+            "api/achievements/unlock",
+            200,
+            data=achievement_data
+        )
+
+    def test_unlock_consistency_master_achievement(self):
+        """Test unlocking a consistency master achievement"""
+        achievement_data = {
+            "id": str(uuid.uuid4()),
+            "player": "0x2222222222222222222222222222222222222222",
+            "achievement_type": "consistency_master",
+            "title": "Consistency Master",
+            "description": "10 games within 50ms variance",
+            "icon": "🎯",
+            "unlocked_at": datetime.utcnow().isoformat()
+        }
+        
+        return self.run_test(
+            "Unlock Consistency Master Achievement",
+            "POST",
+            "api/achievements/unlock",
+            200,
+            data=achievement_data
+        )
+
+    def test_unlock_duplicate_achievement(self):
+        """Test unlocking the same achievement twice (should return already_unlocked)"""
+        achievement_data = {
+            "id": str(uuid.uuid4()),
+            "player": "0x1111111111111111111111111111111111111111",
+            "achievement_type": "speed_demon",
+            "title": "Speed Demon",
+            "description": "React in under 200ms",
+            "icon": "⚡",
+            "unlocked_at": datetime.utcnow().isoformat()
+        }
+        
+        return self.run_test(
+            "Unlock Duplicate Achievement",
+            "POST",
+            "api/achievements/unlock",
+            200,
+            data=achievement_data
+        )
+
+    def test_get_player_achievements_with_data(self):
+        """Test getting achievements for a player with achievements"""
+        player_address = "0x1111111111111111111111111111111111111111"
+        return self.run_test(
+            "Get Player Achievements (With Data)",
+            "GET",
+            f"api/achievements/{player_address}",
+            200
+        )
+
+    # ============================
+    # ENHANCED PLAYER STATS TESTS
+    # ============================
+
+    def test_get_player_stats_empty(self):
+        """Test getting stats for a player with no games"""
+        player_address = "0x8888888888888888888888888888888888888888"
+        return self.run_test(
+            "Get Player Stats (Empty)",
+            "GET",
+            f"api/player/{player_address}/stats",
+            200
+        )
+
+    def test_get_player_stats_with_data(self):
+        """Test getting stats for a player with game data"""
+        player_address = "0x1111111111111111111111111111111111111111"
+        return self.run_test(
+            "Get Player Stats (With Data)",
+            "GET",
+            f"api/player/{player_address}/stats",
+            200
+        )
+
+    def test_generate_stats_image(self):
+        """Test generating shareable stats image data"""
+        player_address = "0x1111111111111111111111111111111111111111"
+        return self.run_test(
+            "Generate Stats Image",
+            "POST",
+            f"api/player/{player_address}/generate-stats-image",
+            200
+        )
+
 def main():
     print("🚀 Starting Enhanced Irys Reflex API Tests (Game Modes Feature)...")
     print("=" * 60)
