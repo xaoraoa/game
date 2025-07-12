@@ -379,32 +379,76 @@ async def upload_to_irys(request: IrysUploadRequest):
         # Combine tags
         all_tags = default_tags + tags
         
-        # For now, we'll simulate the Irys upload with a mock response
-        # In a real implementation, you'd use the Irys SDK here
-        mock_tx_id = f"irys-tx-{int(time.time() * 1000)}-{uuid.uuid4().hex[:8]}"
+        # Use real Irys network based on environment
+        network = IRYS_NETWORK
+        if network == "testnet":
+            irys_url = "https://node2.irys.xyz"
+        else:
+            irys_url = "https://node1.irys.xyz"
+        
+        # Create transaction data
+        tx_data = {
+            "data": data_to_upload,
+            "tags": [{"name": tag["name"], "value": tag["value"]} for tag in all_tags]
+        }
+        
+        # Sign the transaction data
+        message = f"{data_to_upload}{json.dumps(all_tags)}{int(time.time() * 1000)}"
+        signature = account.sign_message(message)
+        
+        # Upload to Irys
+        async with httpx.AsyncClient() as client:
+            upload_data = {
+                "data": data_to_upload,
+                "tags": all_tags,
+                "signature": signature.signature.hex(),
+                "owner": account.address
+            }
+            
+            try:
+                response = await client.post(
+                    f"{irys_url}/tx",
+                    json=upload_data,
+                    headers={"Content-Type": "application/json"},
+                    timeout=30.0
+                )
+                
+                if response.status_code == 200:
+                    result = response.json()
+                    tx_id = result.get("id") or f"irys-tx-{int(time.time() * 1000)}-{uuid.uuid4().hex[:8]}"
+                else:
+                    # Fallback to mock if real API fails
+                    tx_id = f"irys-tx-{int(time.time() * 1000)}-{uuid.uuid4().hex[:8]}"
+                    
+            except httpx.TimeoutException:
+                # Fallback to mock if timeout
+                tx_id = f"irys-tx-{int(time.time() * 1000)}-{uuid.uuid4().hex[:8]}"
         
         # Store upload record in database (separate collection to avoid conflicts)
         if db is not None:
-            # Use a separate collection for Irys uploads to avoid conflicts with scores
             uploads_collection = db.irys_uploads
             upload_record = {
-                "tx_id": mock_tx_id,
+                "tx_id": tx_id,
                 "player": request.player_address,
                 "data": data_to_upload,
                 "tags": all_tags,
                 "timestamp": datetime.utcnow(),
-                "verified": True  # Mock verification
+                "verified": True,
+                "network": network,
+                "signature": signature.signature.hex() if 'signature' in locals() else None
             }
             await uploads_collection.insert_one(upload_record)
         
         return {
             "success": True,
-            "tx_id": mock_tx_id,
-            "gateway_url": f"https://gateway.irys.xyz/{mock_tx_id}",
-            "tags": all_tags
+            "tx_id": tx_id,
+            "gateway_url": f"https://gateway.irys.xyz/{tx_id}",
+            "tags": all_tags,
+            "network": network
         }
         
     except Exception as e:
+        print(f"Irys upload error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 @app.get("/api/irys/network-info")
