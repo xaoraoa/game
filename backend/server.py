@@ -32,14 +32,33 @@ app.add_middleware(
 MONGO_URL = os.environ.get('MONGO_URL')
 DB_NAME = os.environ.get('DB_NAME', 'irys_reflex')
 
+# Irys configuration
+IRYS_PRIVATE_KEY = os.environ.get('IRYS_PRIVATE_KEY')
+IRYS_NETWORK = os.environ.get('IRYS_NETWORK', 'testnet')
+
+if IRYS_PRIVATE_KEY:
+    # Initialize Ethereum account from private key
+    if IRYS_PRIVATE_KEY.startswith('0x'):
+        account = Account.from_key(IRYS_PRIVATE_KEY)
+    else:
+        account = Account.from_key('0x' + IRYS_PRIVATE_KEY)
+    print(f"Irys account initialized: {account.address}")
+else:
+    account = None
+    print("WARNING: IRYS_PRIVATE_KEY not set. Irys operations will be disabled.")
+
 if MONGO_URL:
     client = AsyncIOMotorClient(MONGO_URL)
     db = client[DB_NAME]
     scores_collection = db.scores
+    achievements_collection = db.achievements
+    player_stats_collection = db.player_stats
 else:
     client = None
     db = None
     scores_collection = None
+    achievements_collection = None
+    player_stats_collection = None
     print("WARNING: MONGO_URL not set. Database operations will be disabled.")
 
 class ScoreSubmission(BaseModel):
