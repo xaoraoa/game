@@ -1,4 +1,4 @@
-from backend.server import app
+from server import app
 from mangum import Mangum
 
 handler = Mangum(app)
