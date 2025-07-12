@@ -90,6 +90,36 @@ class LeaderboardEntry(BaseModel):
     sequence_times: Optional[List[int]] = None
     total_targets: Optional[int] = None
 
+class IrysUploadRequest(BaseModel):
+    data: str
+    tags: Optional[List[dict]] = None
+    player_address: str
+
+class SignRequest(BaseModel):
+    message: str
+
+class Achievement(BaseModel):
+    id: str
+    player: str
+    achievement_type: str
+    title: str
+    description: str
+    icon: str
+    unlocked_at: str
+    tx_id: Optional[str] = None
+    verified: bool = False
+
+class PlayerStats(BaseModel):
+    player: str
+    total_games: int
+    best_time: Optional[int] = None
+    average_time: Optional[float] = None
+    total_achievements: int
+    streak_current: int
+    streak_best: int
+    games_by_mode: dict
+    last_played: str
+
 @app.on_event("startup")
 async def startup_event():
     # Create indexes for efficient queries (only if database is available)
