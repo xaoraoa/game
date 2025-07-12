@@ -1,8 +1,8 @@
 services:
   # Frontend Static Site Service
-  - type: static
+  - type: web
     name: irys-reflex-frontend
-    env: static
+    runtime: static
     region: oregon
     plan: free
     buildCommand: cd frontend && yarn install && yarn build
