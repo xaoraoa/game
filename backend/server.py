@@ -161,6 +161,10 @@ async def submit_score(score: ScoreSubmission):
 @app.get("/api/leaderboard", response_model=List[LeaderboardEntry])
 async def get_leaderboard(limit: int = 10, game_mode: Optional[str] = None):
     try:
+        # Return empty leaderboard if database not available
+        if scores_collection is None:
+            return []
+            
         # Build filter query
         filter_query = {}
         if game_mode:
