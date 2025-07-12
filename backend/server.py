@@ -383,8 +383,10 @@ async def upload_to_irys(request: IrysUploadRequest):
         # In a real implementation, you'd use the Irys SDK here
         mock_tx_id = f"irys-tx-{int(time.time() * 1000)}-{uuid.uuid4().hex[:8]}"
         
-        # Store upload record in database
-        if scores_collection is not None:
+        # Store upload record in database (separate collection to avoid conflicts)
+        if db is not None:
+            # Use a separate collection for Irys uploads to avoid conflicts with scores
+            uploads_collection = db.irys_uploads
             upload_record = {
                 "tx_id": mock_tx_id,
                 "player": request.player_address,
@@ -393,7 +395,7 @@ async def upload_to_irys(request: IrysUploadRequest):
                 "timestamp": datetime.utcnow(),
                 "verified": True  # Mock verification
             }
-            await scores_collection.insert_one(upload_record)
+            await uploads_collection.insert_one(upload_record)
         
         return {
             "success": True,
