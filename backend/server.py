@@ -70,7 +70,7 @@ class LeaderboardEntry(BaseModel):
 @app.on_event("startup")
 async def startup_event():
     # Create indexes for efficient queries (only if database is available)
-    if scores_collection:
+    if scores_collection is not None:
         try:
             await scores_collection.create_index([("time", 1)])  # Ascending for best times
             await scores_collection.create_index([("player", 1)])
