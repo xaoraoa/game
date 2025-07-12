@@ -9,7 +9,10 @@ def test_focused_endpoints():
     print("🔍 Testing Achievement Types...")
     response = requests.get(f"{base_url}/api/achievements/types")
     print(f"Status: {response.status_code}")
-    print(f"Response: {json.dumps(response.json(), indent=2)}")
+    if response.status_code == 200:
+        print(f"Response: {json.dumps(response.json(), indent=2)}")
+    else:
+        print(f"Error: {response.text}")
     
     print("\n🔍 Testing Achievement Unlock...")
     achievement_data = {
