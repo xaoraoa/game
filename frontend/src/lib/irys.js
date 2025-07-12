@@ -1,8 +1,5 @@
-// Real Irys SDK implementation
-import Irys from "@irys/sdk";
+// Backend-only Irys integration to avoid webpack issues
 import { ethers } from "ethers";
-
-let irys = null;
 
 // Network configurations
 const NETWORKS = {
@@ -24,59 +21,6 @@ const NETWORKS = {
   }
 };
 
-export async function getIrys(userWallet = null) {
-  if (!irys) {
-    try {
-      const network = process.env.REACT_APP_IRYS_NETWORK || 'testnet';
-      const config = NETWORKS[network];
-      
-      let wallet;
-      
-      if (userWallet) {
-        // Use user's MetaMask wallet
-        wallet = userWallet;
-      } else {
-        // Get backend wallet info
-        const backendUrl = process.env.REACT_APP_BACKEND_URL;
-        const response = await fetch(`${backendUrl}/api/irys/public-key`);
-        const { publicKey } = await response.json();
-        
-        // Create backend wallet interface
-        wallet = {
-          address: publicKey,
-          signMessage: async (message) => {
-            const signResponse = await fetch(`${backendUrl}/api/irys/sign`, {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ message })
-            });
-            const { signature } = await signResponse.json();
-            return signature;
-          }
-        };
-      }
-      
-      // Initialize Irys with real SDK
-      irys = new Irys({
-        network: network === 'mainnet' ? 'mainnet' : 'devnet',
-        token: config.token,
-        key: wallet,
-        config: {
-          providerUrl: config.rpcUrl
-        }
-      });
-      
-      console.log(`Connected to ${config.name} network`);
-      console.log(`Account: ${wallet.address}`);
-      
-    } catch (error) {
-      console.error("Failed to connect to Irys:", error);
-      throw error;
-    }
-  }
-  return irys;
-}
-
 export async function getMetaMaskWallet() {
   if (!window.ethereum) {
     throw new Error("MetaMask not installed");
@@ -96,61 +40,38 @@ export async function getMetaMaskWallet() {
 
 export async function uploadScore(scoreData, useUserWallet = false) {
   try {
-    // Try using real Irys SDK first
-    let wallet = null;
+    const backendUrl = process.env.REACT_APP_BACKEND_URL;
     
-    if (useUserWallet) {
-      wallet = await getMetaMaskWallet();
-    }
-    
-    const irysInstance = await getIrys(wallet);
-    
-    // Upload to Irys using real SDK
-    const response = await irysInstance.upload(JSON.stringify(scoreData), {
-      tags: [
-        { name: "App", value: "IrysReflex" },
-        { name: "Tool", value: "ReactionTime" },
-        { name: "Content-Type", value: "application/json" },
-        { name: "Player", value: scoreData.player },
-        { name: "Username", value: scoreData.username },
-        { name: "GameMode", value: scoreData.game_mode || "classic" },
-        { name: "Timestamp", value: scoreData.timestamp }
-      ]
+    // Always use backend for Irys operations to avoid webpack issues
+    const response = await fetch(`${backendUrl}/api/irys/upload`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        data: JSON.stringify(scoreData),
+        tags: [
+          { name: "App", value: "IrysReflex" },
+          { name: "Tool", value: "ReactionTime" },
+          { name: "Content-Type", value: "application/json" },
+          { name: "Player", value: scoreData.player },
+          { name: "Username", value: scoreData.username },
+          { name: "GameMode", value: scoreData.game_mode || "classic" },
+          { name: "Timestamp", value: scoreData.timestamp }
+        ],
+        player_address: scoreData.player
+      })
     });
-
-    console.log("Score uploaded to Irys:", response.id);
-    return response.id;
+    
+    const result = await response.json();
+    
+    if (result.success) {
+      console.log("Score uploaded to Irys:", result.tx_id);
+      return result.tx_id;
+    } else {
+      throw new Error(result.error || "Upload failed");
+    }
   } catch (error) {
     console.error("Error uploading score to Irys:", error);
-    
-    // Fallback to backend upload if Irys SDK fails
-    try {
-      const backendUrl = process.env.REACT_APP_BACKEND_URL;
-      const backendResponse = await fetch(`${backendUrl}/api/irys/upload`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          data: JSON.stringify(scoreData),
-          tags: [
-            { name: "App", value: "IrysReflex" },
-            { name: "Tool", value: "ReactionTime" },
-            { name: "Content-Type", value: "application/json" },
-            { name: "Player", value: scoreData.player },
-            { name: "Username", value: scoreData.username },
-            { name: "GameMode", value: scoreData.game_mode || "classic" },
-            { name: "Timestamp", value: scoreData.timestamp }
-          ],
-          player_address: scoreData.player
-        })
-      });
-      
-      const result = await backendResponse.json();
-      console.log("Score uploaded via backend:", result.tx_id);
-      return result.tx_id;
-    } catch (backendError) {
-      console.error("Backend upload also failed:", backendError);
-      throw error;
-    }
+    throw error;
   }
 }
 
