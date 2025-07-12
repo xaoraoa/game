@@ -3,7 +3,7 @@ services:
   - type: web
     name: irys-reflex-frontend
     runtime: static
-    plan: free
+    plan: starter
     buildCommand: cd frontend && yarn install && yarn build
     staticPublishPath: frontend/build
     headers:
@@ -31,7 +31,7 @@ services:
     name: irys-reflex-backend
     runtime: python
     region: oregon
-    plan: free
+    plan: starter
     buildCommand: cd backend && pip install -r requirements.txt
     startCommand: uvicorn index:handler --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
