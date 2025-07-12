@@ -42,6 +42,10 @@ services:
         value: production
       - key: PORT
         value: "10000"
+      - key: IRYS_PRIVATE_KEY
+        sync: false  # Set manually in dashboard
+      - key: IRYS_NETWORK
+        value: testnet
 
 databases:
   # Note: Using external MongoDB Atlas is recommended for production
