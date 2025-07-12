@@ -69,12 +69,19 @@ class LeaderboardEntry(BaseModel):
 
 @app.on_event("startup")
 async def startup_event():
-    # Create indexes for efficient queries
-    await scores_collection.create_index([("time", 1)])  # Ascending for best times
-    await scores_collection.create_index([("player", 1)])
-    await scores_collection.create_index([("game_mode", 1)])  # Index for game mode filtering
-    # Create unique index only for non-null tx_id values
-    await scores_collection.create_index([("tx_id", 1)], unique=True, sparse=True)
+    # Create indexes for efficient queries (only if database is available)
+    if scores_collection:
+        try:
+            await scores_collection.create_index([("time", 1)])  # Ascending for best times
+            await scores_collection.create_index([("player", 1)])
+            await scores_collection.create_index([("game_mode", 1)])  # Index for game mode filtering
+            # Create unique index only for non-null tx_id values
+            await scores_collection.create_index([("tx_id", 1)], unique=True, sparse=True)
+            print("Database indexes created successfully")
+        except Exception as e:
+            print(f"Failed to create database indexes: {e}")
+    else:
+        print("Database not available - running without persistence")
 
 @app.post("/api/scores")
 async def submit_score(score: ScoreSubmission):
