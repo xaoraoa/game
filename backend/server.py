@@ -612,7 +612,7 @@ async def get_player_stats(player_address: str):
         
         # Get achievements count
         achievements_count = 0
-        if achievements_collection:
+        if achievements_collection is not None:
             achievements_count = await achievements_collection.count_documents({"player": player_address})
         
         return {
