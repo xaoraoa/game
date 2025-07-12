@@ -10,6 +10,10 @@ from dotenv import load_dotenv
 import json
 import uuid
 from datetime import datetime
+import requests
+from eth_account import Account
+from eth_account.messages import encode_defunct
+import time
 
 load_dotenv()
 
