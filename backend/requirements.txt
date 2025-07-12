@@ -11,3 +11,4 @@ mangum==0.17.0
 eth-account==0.11.0
 web3==6.15.1
 requests==2.31.0
+irys-client==0.1.0
