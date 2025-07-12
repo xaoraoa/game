@@ -28,7 +28,7 @@ services:
   # Backend Web Service
   - type: web
     name: irys-reflex-backend
-    runtime: python
+    env: python
     region: oregon
     plan: free
     buildCommand: cd backend && pip install -r requirements.txt
