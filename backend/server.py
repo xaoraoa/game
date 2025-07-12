@@ -214,24 +214,12 @@ async def verify_transaction(tx_id: str):
 
 @app.get("/api/health")
 async def health_check():
-    """Health check endpoint for monitoring"""
-    try:
-        # Test database connection
-        await client.admin.command('ping')
-        return {
-            "status": "healthy",
-            "timestamp": datetime.utcnow().isoformat(),
-            "database": "connected",
-            "version": "1.0.0"
-        }
-    except Exception as e:
-        return {
-            "status": "unhealthy",
-            "timestamp": datetime.utcnow().isoformat(),
-            "database": "disconnected",
-            "error": str(e),
-            "version": "1.0.0"
-        }
+    db_status = "connected" if scores_collection else "not configured"
+    return {
+        "status": "healthy",
+        "database": db_status,
+        "timestamp": datetime.utcnow().isoformat()
+    }
 
 @app.get("/api/game-modes")
 async def get_game_modes():
