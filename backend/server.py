@@ -214,7 +214,7 @@ async def verify_transaction(tx_id: str):
 
 @app.get("/api/health")
 async def health_check():
-    db_status = "connected" if scores_collection else "not configured"
+    db_status = "connected" if scores_collection is not None else "not configured"
     return {
         "status": "healthy",
         "database": db_status,
