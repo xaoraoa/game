@@ -540,8 +540,8 @@ class IrysReflexAPITester:
         )
 
 def main():
-    print("🚀 Starting Enhanced Irys Reflex API Tests (Game Modes Feature)...")
-    print("=" * 60)
+    print("🚀 Starting Comprehensive Irys Reflex API Tests (Irys Integration + Achievements)...")
+    print("=" * 80)
     
     # Initialize tester
     tester = IrysReflexAPITester()
@@ -553,50 +553,72 @@ def main():
     print("\n🏥 Testing Health Check Endpoint...")
     tester.test_health_check()
     
-    # Test 2: Game Modes API
+    # Test 2: Irys Blockchain Integration
+    print("\n🔗 Testing Irys Blockchain Integration...")
+    tester.test_irys_public_key()
+    tester.test_irys_sign_message()
+    tester.test_irys_upload_data()
+    tester.test_irys_network_info()
+    
+    # Test 3: Achievement System
+    print("\n🏆 Testing Achievement System...")
+    tester.test_get_achievement_types()
+    tester.test_get_player_achievements_empty()
+    tester.test_unlock_speed_demon_achievement()
+    tester.test_unlock_consistency_master_achievement()
+    tester.test_unlock_duplicate_achievement()
+    tester.test_get_player_achievements_with_data()
+    
+    # Test 4: Enhanced Player Stats
+    print("\n📊 Testing Enhanced Player Stats...")
+    tester.test_get_player_stats_empty()
+    tester.test_get_player_stats_with_data()
+    tester.test_generate_stats_image()
+    
+    # Test 5: Game Modes API
     print("\n🎮 Testing Game Modes API...")
     tester.test_get_game_modes()
     
-    # Test 2: Enhanced Score Submission with Game Modes
-    print("\n📊 Testing Enhanced Score Submission...")
+    # Test 6: Enhanced Score Submission with Game Modes
+    print("\n📈 Testing Enhanced Score Submission...")
     tester.test_submit_classic_mode_score()
     tester.test_submit_sequence_mode_score()
     tester.test_submit_endurance_mode_score()
     tester.test_submit_precision_mode_score()
     
-    # Test 3: Backward Compatibility
+    # Test 7: Backward Compatibility
     print("\n🔄 Testing Backward Compatibility...")
     tester.test_backward_compatibility_score()
     tester.test_submit_score_without_tx()
     tester.test_submit_score_with_penalty()
     tester.test_submit_score_with_mock_tx()
     
-    # Test 4: Enhanced Leaderboard with Game Mode Filtering
-    print("\n🏆 Testing Enhanced Leaderboard...")
+    # Test 8: Enhanced Leaderboard with Game Mode Filtering
+    print("\n🏅 Testing Enhanced Leaderboard...")
     tester.test_leaderboard_classic_mode()
     tester.test_leaderboard_sequence_mode()
     tester.test_leaderboard_endurance_mode()
     tester.test_leaderboard_precision_mode()
     tester.test_mixed_mode_leaderboard()
     
-    # Test 5: Original functionality
+    # Test 9: Original functionality
     print("\n🔍 Testing Original Functionality...")
     tester.test_leaderboard_empty()
     tester.test_leaderboard_with_data()
     tester.test_leaderboard_with_limit()
     tester.test_player_scores()
     
-    # Test 6: Transaction verification
+    # Test 10: Transaction verification
     print("\n🔐 Testing Transaction Verification...")
     tester.test_verify_transaction_mock()
     tester.test_verify_transaction_invalid()
     
-    # Test 7: Invalid data handling
+    # Test 11: Invalid data handling
     print("\n❌ Testing Error Handling...")
     tester.test_invalid_score_submission()
     
     # Print final results
-    print("\n" + "=" * 60)
+    print("\n" + "=" * 80)
     print(f"📊 Final Results:")
     print(f"   Tests Run: {tester.tests_run}")
     print(f"   Tests Passed: {tester.tests_passed}")
@@ -604,7 +626,7 @@ def main():
     print(f"   Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
     
     if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed! Game Modes feature is working correctly!")
+        print("🎉 All tests passed! Irys Integration and Achievement System are working correctly!")
         return 0
     else:
         print("⚠️  Some tests failed! Check the output above for details.")
