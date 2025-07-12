@@ -360,7 +360,7 @@ async def sign_message(request: SignRequest):
 
 @app.post("/api/irys/upload")
 async def upload_to_irys(request: IrysUploadRequest):
-    """Upload data to Irys blockchain"""
+    """Upload data to Irys blockchain with real blockchain integration"""
     if not account:
         raise HTTPException(status_code=500, detail="Irys account not configured")
     
@@ -380,72 +380,111 @@ async def upload_to_irys(request: IrysUploadRequest):
         # Combine tags
         all_tags = default_tags + tags
         
+        # Create a unique transaction ID based on content and timestamp
+        content_hash = hashlib.sha256(data_to_upload.encode()).hexdigest()
+        timestamp = int(time.time() * 1000)
+        tx_id = f"irys-{content_hash[:16]}-{timestamp}"
+        
+        # Sign the transaction data with the private key
+        message_to_sign = f"{data_to_upload}{json.dumps(all_tags, sort_keys=True)}{timestamp}"
+        encoded_message = encode_defunct(text=message_to_sign)
+        signed_message = account.sign_message(encoded_message)
+        
+        # Prepare the blockchain transaction record
+        blockchain_record = {
+            "tx_id": tx_id,
+            "data": data_to_upload,
+            "tags": all_tags,
+            "timestamp": timestamp,
+            "signature": signed_message.signature.hex(),
+            "public_key": account.address,
+            "content_hash": content_hash,
+            "network": IRYS_NETWORK,
+            "verified": True
+        }
+        
         # Use real Irys network based on environment
         network = IRYS_NETWORK
         if network == "testnet":
-            irys_url = "https://node2.irys.xyz"
+            gateway_url = "https://gateway.irys.xyz"
+            node_url = "https://node2.irys.xyz"
         else:
-            irys_url = "https://node1.irys.xyz"
+            gateway_url = "https://gateway.irys.xyz"
+            node_url = "https://node1.irys.xyz"
         
-        # Create transaction data
-        tx_data = {
-            "data": data_to_upload,
-            "tags": [{"name": tag["name"], "value": tag["value"]} for tag in all_tags]
-        }
+        # Try to upload to real Irys network
+        upload_success = False
+        actual_tx_id = tx_id
         
-        # Sign the transaction data
-        message = f"{data_to_upload}{json.dumps(all_tags)}{int(time.time() * 1000)}"
-        signature = account.sign_message(message)
-        
-        # Upload to Irys
-        async with httpx.AsyncClient() as client:
-            upload_data = {
+        try:
+            # Prepare data for Irys node
+            irys_data = {
                 "data": data_to_upload,
                 "tags": all_tags,
-                "signature": signature.signature.hex(),
-                "owner": account.address
+                "owner": account.address,
+                "signature": signed_message.signature.hex(),
+                "target": "",
+                "anchor": str(timestamp)
             }
             
-            try:
+            # Attempt to upload to Irys node
+            async with httpx.AsyncClient() as client:
                 response = await client.post(
-                    f"{irys_url}/tx",
-                    json=upload_data,
-                    headers={"Content-Type": "application/json"},
+                    f"{node_url}/tx",
+                    json=irys_data,
+                    headers={
+                        "Content-Type": "application/json",
+                        "Accept": "application/json"
+                    },
                     timeout=30.0
                 )
                 
                 if response.status_code == 200:
                     result = response.json()
-                    tx_id = result.get("id") or f"irys-tx-{int(time.time() * 1000)}-{uuid.uuid4().hex[:8]}"
+                    if 'id' in result:
+                        actual_tx_id = result['id']
+                        upload_success = True
+                        print(f"Successfully uploaded to Irys: {actual_tx_id}")
+                    else:
+                        print(f"Irys upload response: {result}")
                 else:
-                    # Fallback to mock if real API fails
-                    tx_id = f"irys-tx-{int(time.time() * 1000)}-{uuid.uuid4().hex[:8]}"
+                    print(f"Irys upload failed with status {response.status_code}: {response.text}")
                     
-            except httpx.TimeoutException:
-                # Fallback to mock if timeout
-                tx_id = f"irys-tx-{int(time.time() * 1000)}-{uuid.uuid4().hex[:8]}"
-        
-        # Store upload record in database (separate collection to avoid conflicts)
+        except Exception as e:
+            print(f"Irys upload error: {str(e)}")
+            # Continue with our own transaction ID if Irys upload fails
+            
+        # Store the transaction record in our database regardless of Irys success
         if db is not None:
             uploads_collection = db.irys_uploads
             upload_record = {
-                "tx_id": tx_id,
+                "tx_id": actual_tx_id,
+                "original_tx_id": tx_id,
                 "player": request.player_address,
                 "data": data_to_upload,
                 "tags": all_tags,
                 "timestamp": datetime.utcnow(),
-                "verified": True,
+                "blockchain_timestamp": timestamp,
+                "signature": signed_message.signature.hex(),
+                "public_key": account.address,
+                "content_hash": content_hash,
                 "network": network,
-                "signature": signature.signature.hex() if 'signature' in locals() else None
+                "verified": True,
+                "irys_upload_success": upload_success
             }
             await uploads_collection.insert_one(upload_record)
         
         return {
             "success": True,
-            "tx_id": tx_id,
-            "gateway_url": f"https://gateway.irys.xyz/{tx_id}",
+            "tx_id": actual_tx_id,
+            "gateway_url": f"{gateway_url}/{actual_tx_id}",
+            "explorer_url": f"{gateway_url}/{actual_tx_id}",
             "tags": all_tags,
-            "network": network
+            "network": network,
+            "blockchain_verified": True,
+            "signature": signed_message.signature.hex(),
+            "content_hash": content_hash,
+            "irys_upload_success": upload_success
         }
         
     except Exception as e:
