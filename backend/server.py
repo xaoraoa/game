@@ -469,6 +469,8 @@ async def unlock_achievement(achievement: Achievement):
         })
         
         if existing:
+            # Remove MongoDB ObjectId before returning
+            existing.pop('_id', None)
             return {"status": "already_unlocked", "achievement": existing}
         
         # Create achievement document
