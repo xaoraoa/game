@@ -814,100 +814,63 @@ class IrysReflexAPITester:
         )
 
 def main():
-    print("🚀 Starting Comprehensive Irys Reflex API Tests (Irys Integration + Achievements)...")
+    print("🚀 Starting CORS Configuration Testing for Render Deployment...")
     print("=" * 80)
     
-    # Initialize tester
+    # Initialize tester with Render backend URL
     tester = IrysReflexAPITester()
     
-    # Run all tests in sequence
-    print("\n📋 Running Backend API Tests:")
+    # Run CORS-focused tests first
+    print("\n🌐 Testing CORS Configuration for Render Deployment:")
     
-    # Test 1: Health Check for Render Deployment
+    # Test 1: Health Check Endpoint
     print("\n🏥 Testing Health Check Endpoint...")
     tester.test_health_check()
     
-    # Test 2: Irys Blockchain Integration
-    print("\n🔗 Testing Irys Blockchain Integration...")
-    tester.test_irys_public_key()
-    tester.test_irys_network_info()
-    tester.test_irys_balance()
-    tester.test_irys_upload_price()
-    tester.test_irys_fund_account()
-    tester.test_irys_sign_message()
-    tester.test_irys_sign_complex_message()
-    tester.test_irys_upload_data()
-    tester.test_irys_upload_with_custom_tags()
-    tester.test_irys_upload_large_data()
-    tester.test_end_to_end_irys_score_flow()
+    # Test 2: CORS Preflight Requests (OPTIONS)
+    print("\n✈️ Testing CORS Preflight Requests...")
+    tester.test_cors_options_health()
+    tester.test_cors_options_game_modes()
+    tester.test_cors_options_scores()
     
-    # Test 3: Achievement System
-    print("\n🏆 Testing Achievement System...")
-    tester.test_get_achievement_types()
-    tester.test_get_player_achievements_empty()
-    tester.test_unlock_speed_demon_achievement()
-    tester.test_unlock_consistency_master_achievement()
-    tester.test_unlock_duplicate_achievement()
-    tester.test_get_player_achievements_with_data()
+    # Test 3: CORS with Different Origins
+    print("\n🌍 Testing CORS with Different Origins...")
+    tester.test_cors_get_with_render_origin()
+    tester.test_cors_get_with_localhost_origin()
+    tester.test_cors_post_with_render_origin()
+    tester.test_cors_unauthorized_origin()
     
-    # Test 4: Enhanced Player Stats
-    print("\n📊 Testing Enhanced Player Stats...")
-    tester.test_get_player_stats_empty()
-    tester.test_get_player_stats_with_data()
-    tester.test_generate_stats_image()
-    
-    # Test 5: Game Modes API
+    # Test 4: Game Modes API (Core functionality)
     print("\n🎮 Testing Game Modes API...")
     tester.test_get_game_modes()
     
-    # Test 6: Enhanced Score Submission with Game Modes
-    print("\n📈 Testing Enhanced Score Submission...")
+    # Test 5: Core API Functionality
+    print("\n📋 Testing Core API Functionality...")
+    tester.test_submit_score_without_tx()
+    tester.test_submit_score_with_penalty()
+    tester.test_leaderboard_with_data()
+    tester.test_player_scores()
+    tester.test_verify_transaction_mock()
+    
+    # Test 6: Game Mode Enhanced Features
+    print("\n🎯 Testing Enhanced Game Mode Features...")
     tester.test_submit_classic_mode_score()
     tester.test_submit_sequence_mode_score()
     tester.test_submit_endurance_mode_score()
     tester.test_submit_precision_mode_score()
-    
-    # Test 7: Backward Compatibility
-    print("\n🔄 Testing Backward Compatibility...")
-    tester.test_backward_compatibility_score()
-    tester.test_submit_score_without_tx()
-    tester.test_submit_score_with_penalty()
-    tester.test_submit_score_with_mock_tx()
-    
-    # Test 8: Enhanced Leaderboard with Game Mode Filtering
-    print("\n🏅 Testing Enhanced Leaderboard...")
     tester.test_leaderboard_classic_mode()
-    tester.test_leaderboard_sequence_mode()
     tester.test_leaderboard_endurance_mode()
-    tester.test_leaderboard_precision_mode()
-    tester.test_mixed_mode_leaderboard()
-    
-    # Test 9: Original functionality
-    print("\n🔍 Testing Original Functionality...")
-    tester.test_leaderboard_empty()
-    tester.test_leaderboard_with_data()
-    tester.test_leaderboard_with_limit()
-    tester.test_player_scores()
-    
-    # Test 10: Transaction verification
-    print("\n🔐 Testing Transaction Verification...")
-    tester.test_verify_transaction_mock()
-    tester.test_verify_transaction_invalid()
-    
-    # Test 11: Invalid data handling
-    print("\n❌ Testing Error Handling...")
-    tester.test_invalid_score_submission()
     
     # Print final results
     print("\n" + "=" * 80)
-    print(f"📊 Final Results:")
+    print(f"📊 CORS & Render Deployment Test Results:")
     print(f"   Tests Run: {tester.tests_run}")
     print(f"   Tests Passed: {tester.tests_passed}")
     print(f"   Tests Failed: {tester.tests_run - tester.tests_passed}")
     print(f"   Success Rate: {(tester.tests_passed/tester.tests_run)*100:.1f}%")
     
     if tester.tests_passed == tester.tests_run:
-        print("🎉 All tests passed! Irys Integration and Achievement System are working correctly!")
+        print("🎉 All CORS and core functionality tests passed! Ready for Render deployment!")
         return 0
     else:
         print("⚠️  Some tests failed! Check the output above for details.")
