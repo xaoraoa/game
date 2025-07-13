@@ -398,8 +398,9 @@ const App = () => {
       return;
     }
 
-    // Check balance before uploading
-    if (irysBalance !== null && irysBalance < 1000) {
+    // Check balance before uploading - skip for testnet/devnet (free uploads)
+    const isTestNetwork = networkInfo?.network === 'testnet' || networkInfo?.network === 'devnet';
+    if (!isTestNetwork && irysBalance !== null && irysBalance < 1000) {
       toast.error('Insufficient balance. Please fund your account with IRYS tokens.', {
         duration: 6000,
         action: {
