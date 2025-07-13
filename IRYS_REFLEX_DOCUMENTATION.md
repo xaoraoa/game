@@ -28,6 +28,21 @@
 - **Mode-Specific Rankings**: Filter leaderboard by game mode
 - **Personal Statistics**: Track your improvement over time
 - **Verified Scores**: Visual indicators show blockchain-verified scores
+- **Twitter Sharing**: Share results with automatic screenshot generation
+
+## 🐦 Twitter Sharing Feature
+
+### 📸 Automatic Screenshot Sharing
+- **Smart Screenshots**: Automatically captures beautiful result cards
+- **Game Mode Specific**: Shows relevant metrics for each game mode
+- **Branded Design**: Irys-themed result cards with glassmorphism effects
+- **One-Click Sharing**: Share to Twitter with pre-filled text and image
+
+### 🎯 Share Content Examples
+- **Classic Mode**: "⚡ Classic Mode: 250ms"
+- **Sequence Mode**: "🔄 Sequence Mode: 245ms average (3 targets)"
+- **Endurance Mode**: "⏱️ Endurance Mode: 15 hits in 60 seconds"
+- **Precision Mode**: "🎪 Precision Mode: 230ms with 95.5% accuracy"
 
 ## 🎨 User Interface & Design
 
