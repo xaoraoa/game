@@ -31,7 +31,7 @@ services:
     env: python
     region: oregon
     plan: free
-    runtime: python-3.11
+    runtime: python-3.10
     buildCommand: cd backend && pip install --upgrade pip setuptools wheel && pip install -r requirements.txt
     startCommand: cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
@@ -47,7 +47,13 @@ services:
       - key: IRYS_PRIVATE_KEY
         sync: false  # Set manually in dashboard
       - key: IRYS_NETWORK
-        value: testnet
+        value: devnet
+      - key: IRYS_RPC_URL
+        value: https://rpc.devnet.irys.xyz/v1
+      - key: GATEWAY_URL
+        value: https://devnet.irys.xyz
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://irys-reflex-frontend.onrender.com,http://localhost:3000
 
 databases:
   # Note: Using external MongoDB Atlas is recommended for production
