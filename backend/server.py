@@ -37,16 +37,36 @@ DB_NAME = os.environ.get('DB_NAME', 'irys_reflex')
 # Irys configuration
 IRYS_PRIVATE_KEY = os.environ.get('IRYS_PRIVATE_KEY')
 IRYS_NETWORK = os.environ.get('IRYS_NETWORK', 'testnet')
+PRIVATE_KEY = os.environ.get('PRIVATE_KEY', IRYS_PRIVATE_KEY)  # Alternative env var name
+IRYS_RPC_URL = os.environ.get('IRYS_RPC_URL', 'https://rpc.irys.xyz')
+GATEWAY_URL = os.environ.get('GATEWAY_URL', 'https://gateway.irys.xyz')
 
-if IRYS_PRIVATE_KEY:
-    # Initialize Ethereum account from private key
-    if IRYS_PRIVATE_KEY.startswith('0x'):
-        account = Account.from_key(IRYS_PRIVATE_KEY)
-    else:
-        account = Account.from_key('0x' + IRYS_PRIVATE_KEY)
-    print(f"Irys account initialized: {account.address}")
+# Initialize Irys client
+irys_client = None
+account = None
+
+if PRIVATE_KEY or IRYS_PRIVATE_KEY:
+    try:
+        # Initialize Irys client using the SDK
+        private_key = PRIVATE_KEY or IRYS_PRIVATE_KEY
+        if not private_key.startswith('0x'):
+            private_key = '0x' + private_key
+            
+        # Create Irys client with Ethereum wallet
+        irys_client = Builder("ethereum").wallet(private_key).build()
+        
+        # Also initialize account for signing operations
+        account = Account.from_key(private_key)
+        
+        print(f"Irys client initialized successfully: {account.address}")
+        print(f"Network: {IRYS_NETWORK}")
+        print(f"Gateway: {GATEWAY_URL}")
+        
+    except Exception as e:
+        print(f"Error initializing Irys client: {str(e)}")
+        irys_client = None
+        account = None
 else:
-    account = None
     print("WARNING: IRYS_PRIVATE_KEY not set. Irys operations will be disabled.")
 
 if MONGO_URL:
