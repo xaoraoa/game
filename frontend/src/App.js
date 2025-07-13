@@ -10,6 +10,7 @@ import {
   fundIrysAccount,
   getNetworkInfo
 } from './lib/irys';
+import { initKeepAlive } from './utils/keepAlive';
 import './App.css';
 
 const App = () => {
