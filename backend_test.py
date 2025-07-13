@@ -412,6 +412,172 @@ class IrysReflexAPITester:
             200
         )
 
+    def test_irys_balance(self):
+        """Test getting Irys account balance"""
+        return self.run_test(
+            "Get Irys Balance",
+            "GET",
+            "api/irys/balance",
+            200
+        )
+
+    def test_irys_upload_price(self):
+        """Test getting upload price for data"""
+        return self.run_test(
+            "Get Irys Upload Price",
+            "GET",
+            "api/irys/upload-price",
+            200,
+            params={"data_size": 1000}
+        )
+
+    def test_irys_fund_account(self):
+        """Test funding Irys account"""
+        return self.run_test(
+            "Fund Irys Account",
+            "POST",
+            "api/irys/fund",
+            200,
+            params={"amount": 10000}
+        )
+
+    def test_irys_upload_with_custom_tags(self):
+        """Test uploading data to Irys with custom tags"""
+        test_upload = {
+            "data": json.dumps({
+                "type": "custom_test",
+                "player": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd",
+                "custom_field": "test_value",
+                "timestamp": datetime.utcnow().isoformat()
+            }),
+            "tags": [
+                {"name": "Test-Type", "value": "custom-upload"},
+                {"name": "Version", "value": "1.0"},
+                {"name": "Environment", "value": "test"}
+            ],
+            "player_address": "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+        }
+        
+        return self.run_test(
+            "Upload Data with Custom Tags",
+            "POST",
+            "api/irys/upload",
+            200,
+            data=test_upload
+        )
+
+    def test_irys_upload_large_data(self):
+        """Test uploading larger data payload to Irys"""
+        large_data = {
+            "type": "large_test_data",
+            "player": "0x1234567890123456789012345678901234567890",
+            "scores": [{"time": i * 100, "penalty": i % 2 == 0} for i in range(100)],
+            "metadata": {
+                "test_run": "large_data_test",
+                "timestamp": datetime.utcnow().isoformat(),
+                "description": "Testing large data upload to Irys blockchain"
+            }
+        }
+        
+        test_upload = {
+            "data": json.dumps(large_data),
+            "tags": [
+                {"name": "Data-Size", "value": "large"},
+                {"name": "Test-Type", "value": "performance"}
+            ],
+            "player_address": "0x1234567890123456789012345678901234567890"
+        }
+        
+        return self.run_test(
+            "Upload Large Data to Irys",
+            "POST",
+            "api/irys/upload",
+            200,
+            data=test_upload
+        )
+
+    def test_end_to_end_irys_score_flow(self):
+        """Test complete flow: Irys upload -> Score submission"""
+        print("\n🔄 Testing End-to-End Irys Score Flow...")
+        
+        # Step 1: Upload score data to Irys
+        score_data = {
+            "player": "0xe2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2e2",
+            "username": "E2ETestPlayer",
+            "time": 175,
+            "penalty": False,
+            "timestamp": datetime.utcnow().isoformat(),
+            "game_mode": "classic"
+        }
+        
+        irys_upload = {
+            "data": json.dumps(score_data),
+            "tags": [
+                {"name": "Content-Type", "value": "game-score"},
+                {"name": "Game-Mode", "value": "classic"}
+            ],
+            "player_address": score_data["player"]
+        }
+        
+        # Upload to Irys first
+        success, upload_response = self.run_test(
+            "E2E: Upload Score to Irys",
+            "POST",
+            "api/irys/upload",
+            200,
+            data=irys_upload
+        )
+        
+        if not success:
+            print("❌ E2E Test Failed: Irys upload failed")
+            return False, {}
+        
+        # Extract transaction ID from upload response
+        tx_id = upload_response.get("tx_id")
+        if not tx_id:
+            print("❌ E2E Test Failed: No transaction ID returned from Irys upload")
+            return False, {}
+        
+        print(f"✅ Irys upload successful, tx_id: {tx_id}")
+        
+        # Step 2: Submit score with Irys transaction ID
+        score_data["tx_id"] = tx_id
+        
+        success, score_response = self.run_test(
+            "E2E: Submit Score with Irys TX",
+            "POST",
+            "api/scores",
+            200,
+            data=score_data
+        )
+        
+        if success:
+            print("✅ End-to-End Irys Score Flow completed successfully!")
+            return True, {"upload": upload_response, "score": score_response}
+        else:
+            print("❌ E2E Test Failed: Score submission failed")
+            return False, {}
+
+    def test_irys_sign_complex_message(self):
+        """Test signing a complex message structure"""
+        complex_message = {
+            "message": json.dumps({
+                "action": "score_verification",
+                "player": "0x1234567890123456789012345678901234567890",
+                "score": 150,
+                "timestamp": datetime.utcnow().isoformat(),
+                "nonce": str(uuid.uuid4())
+            })
+        }
+        
+        return self.run_test(
+            "Sign Complex Message",
+            "POST",
+            "api/irys/sign",
+            200,
+            data=complex_message
+        )
+
     # ============================
     # ACHIEVEMENT SYSTEM TESTS
     # ============================
