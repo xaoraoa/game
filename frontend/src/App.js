@@ -18,6 +18,10 @@ const App = () => {
   const [penalty, setPenalty] = useState(false);
   const [username, setUsername] = useState('');
   const [walletAddress, setWalletAddress] = useState('');
+  const [walletConnected, setWalletConnected] = useState(false);
+  const [walletConnecting, setWalletConnecting] = useState(false);
+  const [irysBalance, setIrysBalance] = useState(null);
+  const [networkInfo, setNetworkInfo] = useState(null);
   const [leaderboard, setLeaderboard] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [lastTxId, setLastTxId] = useState('');
