@@ -23,7 +23,8 @@ fi
 
 echo "🔧 Updating browser data..."
 # Update browserslist data to resolve warnings
-npx update-browserslist-db@latest || echo "Browserslist update failed - continuing anyway"
+yarn add -W caniuse-lite@latest || echo "Browserslist update failed - continuing anyway"
+yarn remove -W caniuse-lite || echo "Cleanup failed - continuing anyway"
 
 echo "🔍 Pre-build verification..."
 # Verify critical dependencies
