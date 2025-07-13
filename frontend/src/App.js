@@ -732,7 +732,7 @@ const App = () => {
         <div className="leaderboard-section">
           <h2 className="leaderboard-title">🏆 Leaderboard - {getGameModeDisplayName(selectedGameMode)}</h2>
           <div className="leaderboard">
-            {leaderboard.length === 0 ? (
+            {!Array.isArray(leaderboard) || leaderboard.length === 0 ? (
               <p className="no-scores">No scores yet for {getGameModeDisplayName(selectedGameMode)} mode. Be the first!</p>
             ) : (
               <div className="leaderboard-list">
