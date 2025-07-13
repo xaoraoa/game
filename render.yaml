@@ -31,7 +31,7 @@ services:
     env: python
     region: oregon
     plan: free
-    buildCommand: cd backend && pip install --upgrade pip setuptools wheel && pip install -r requirements.txt && npm install
+    buildCommand: ./build-render.sh
     startCommand: cd backend && uvicorn server:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /api/health
     envVars:
