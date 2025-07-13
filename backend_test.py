@@ -10,22 +10,40 @@ class IrysReflexAPITester:
         self.tests_run = 0
         self.tests_passed = 0
 
-    def run_test(self, name, method, endpoint, expected_status, data=None, params=None):
+    def run_test(self, name, method, endpoint, expected_status, data=None, params=None, check_cors=False, origin=None):
         """Run a single API test"""
         url = f"{self.base_url}/{endpoint}"
         headers = {'Content-Type': 'application/json'}
+        
+        # Add Origin header for CORS testing
+        if origin:
+            headers['Origin'] = origin
 
         self.tests_run += 1
         print(f"\n🔍 Testing {name}...")
         print(f"   URL: {url}")
+        if origin:
+            print(f"   Origin: {origin}")
         
         try:
             if method == 'GET':
                 response = requests.get(url, headers=headers, params=params)
             elif method == 'POST':
                 response = requests.post(url, json=data, headers=headers)
+            elif method == 'OPTIONS':
+                response = requests.options(url, headers=headers)
 
             print(f"   Status Code: {response.status_code}")
+            
+            # Check CORS headers if requested
+            if check_cors:
+                cors_headers = {
+                    'Access-Control-Allow-Origin': response.headers.get('Access-Control-Allow-Origin'),
+                    'Access-Control-Allow-Methods': response.headers.get('Access-Control-Allow-Methods'),
+                    'Access-Control-Allow-Headers': response.headers.get('Access-Control-Allow-Headers'),
+                    'Access-Control-Allow-Credentials': response.headers.get('Access-Control-Allow-Credentials')
+                }
+                print(f"   CORS Headers: {json.dumps(cors_headers, indent=6)}")
             
             success = response.status_code == expected_status
             if success:
@@ -50,6 +68,96 @@ class IrysReflexAPITester:
         except Exception as e:
             print(f"❌ Failed - Error: {str(e)}")
             return False, {}
+
+    # ============================
+    # CORS TESTING METHODS
+    # ============================
+    
+    def test_cors_options_health(self):
+        """Test CORS preflight request for health endpoint"""
+        return self.run_test(
+            "CORS OPTIONS - Health Check",
+            "OPTIONS",
+            "api/health",
+            200,
+            check_cors=True,
+            origin="https://irys-reflex-frontend.onrender.com"
+        )
+    
+    def test_cors_options_game_modes(self):
+        """Test CORS preflight request for game modes endpoint"""
+        return self.run_test(
+            "CORS OPTIONS - Game Modes",
+            "OPTIONS",
+            "api/game-modes",
+            200,
+            check_cors=True,
+            origin="https://irys-reflex-frontend.onrender.com"
+        )
+    
+    def test_cors_options_scores(self):
+        """Test CORS preflight request for scores endpoint"""
+        return self.run_test(
+            "CORS OPTIONS - Scores",
+            "OPTIONS",
+            "api/scores",
+            200,
+            check_cors=True,
+            origin="https://irys-reflex-frontend.onrender.com"
+        )
+    
+    def test_cors_get_with_render_origin(self):
+        """Test GET request with Render frontend origin"""
+        return self.run_test(
+            "CORS GET - Health with Render Origin",
+            "GET",
+            "api/health",
+            200,
+            check_cors=True,
+            origin="https://irys-reflex-frontend.onrender.com"
+        )
+    
+    def test_cors_get_with_localhost_origin(self):
+        """Test GET request with localhost origin"""
+        return self.run_test(
+            "CORS GET - Health with Localhost Origin",
+            "GET",
+            "api/health",
+            200,
+            check_cors=True,
+            origin="http://localhost:3000"
+        )
+    
+    def test_cors_post_with_render_origin(self):
+        """Test POST request with Render frontend origin"""
+        test_score = {
+            "player": "0x1234567890123456789012345678901234567890",
+            "username": "CORSTestPlayer",
+            "time": 250,
+            "penalty": False,
+            "timestamp": datetime.utcnow().isoformat()
+        }
+        
+        return self.run_test(
+            "CORS POST - Submit Score with Render Origin",
+            "POST",
+            "api/scores",
+            200,
+            data=test_score,
+            check_cors=True,
+            origin="https://irys-reflex-frontend.onrender.com"
+        )
+    
+    def test_cors_unauthorized_origin(self):
+        """Test request with unauthorized origin"""
+        return self.run_test(
+            "CORS GET - Unauthorized Origin",
+            "GET",
+            "api/health",
+            200,  # Should still work but without CORS headers
+            check_cors=True,
+            origin="https://malicious-site.com"
+        )
 
     def test_leaderboard_empty(self):
         """Test getting empty leaderboard"""
