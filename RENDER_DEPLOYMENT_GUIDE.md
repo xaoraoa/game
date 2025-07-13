@@ -66,6 +66,8 @@
 #### Build Failures
 - **Frontend**: Check Node.js memory (set to 8GB in render.yaml)
 - **Backend**: Ensure all requirements are in requirements.txt
+- **Python 3.13 Issues**: Fixed with setuptools>=65.0.0 and runtime: python-3.11
+- **Missing pkg_resources**: Fixed by adding setuptools to requirements.txt
 
 #### Database Connection
 - **Error**: "MongoServerError: bad auth"
