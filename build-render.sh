@@ -12,6 +12,8 @@ cd backend
 
 echo "📦 Installing Python dependencies..."
 pip install --upgrade pip setuptools wheel
+# Force reinstall Pillow to avoid version conflicts
+pip uninstall -y Pillow || echo "Pillow not installed"
 pip install -r requirements.txt
 
 echo "🟢 Node.js dependency installation..."
