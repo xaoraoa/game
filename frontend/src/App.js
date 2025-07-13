@@ -538,20 +538,81 @@ const App = () => {
         </header>
 
         <div className="wallet-section">
-          <div className="wallet-info">
-            <p><strong>Wallet:</strong> {walletAddress ? `${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` : 'Not connected'}</p>
-          </div>
-          
-          <div className="username-section">
-            <input
-              type="text"
-              placeholder="Enter your username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="username-input"
-              maxLength={20}
-            />
-          </div>
+          {!walletConnected ? (
+            <div className="wallet-connect">
+              <div className="wallet-status">
+                <h3>🔗 Connect Your Wallet</h3>
+                <p>Connect MetaMask to save your scores permanently on Irys blockchain</p>
+              </div>
+              
+              <button 
+                onClick={handleWalletConnect}
+                disabled={walletConnecting}
+                className="connect-wallet-btn"
+              >
+                {walletConnecting ? '🔄 Connecting...' : '🦊 Connect MetaMask'}
+              </button>
+              
+              {!window.ethereum && (
+                <div className="metamask-warning">
+                  <p>⚠️ MetaMask not detected. <a href="https://metamask.io" target="_blank" rel="noopener noreferrer">Install MetaMask</a></p>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="wallet-connected">
+              <div className="wallet-info">
+                <div className="wallet-address">
+                  <strong>✅ Wallet Connected:</strong>
+                  <span className="address">{walletAddress.slice(0, 6)}...{walletAddress.slice(-4)}</span>
+                </div>
+                
+                <div className="irys-balance">
+                  <strong>Irys Balance:</strong>
+                  <span className="balance">
+                    {irysBalance !== null ? `${irysBalance} wei` : 'Loading...'}
+                  </span>
+                  {irysBalance !== null && irysBalance < 1000 && (
+                    <button 
+                      onClick={handleFundAccount}
+                      className="fund-btn"
+                      title="Fund your account to save scores"
+                    >
+                      💰 Fund Account
+                    </button>
+                  )}
+                </div>
+                
+                {networkInfo && (
+                  <div className="network-info">
+                    <strong>Network:</strong>
+                    <span>{networkInfo.network} ({networkInfo.config?.name})</span>
+                    {networkInfo.config?.faucet_url && (
+                      <a 
+                        href={networkInfo.config.faucet_url} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="faucet-link"
+                      >
+                        🚰 Get Testnet Tokens
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+              
+              <div className="username-section">
+                <input
+                  type="text"
+                  placeholder="Enter your username"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="username-input"
+                  maxLength={20}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         <div className="game-mode-section">
