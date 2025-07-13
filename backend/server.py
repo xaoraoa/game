@@ -327,8 +327,28 @@ async def health_check():
     }
 
 @app.options("/api/{path:path}")
-async def options_handler():
+async def options_handler(path: str):
     """Handle CORS preflight requests"""
+    return {"message": "OK"}
+
+@app.options("/api/health")
+async def options_health():
+    """Handle CORS preflight for health endpoint"""
+    return {"message": "OK"}
+
+@app.options("/api/game-modes")
+async def options_game_modes():
+    """Handle CORS preflight for game-modes endpoint"""
+    return {"message": "OK"}
+
+@app.options("/api/scores")
+async def options_scores():
+    """Handle CORS preflight for scores endpoint"""
+    return {"message": "OK"}
+
+@app.options("/api/leaderboard")
+async def options_leaderboard():
+    """Handle CORS preflight for leaderboard endpoint"""
     return {"message": "OK"}
 
 @app.get("/api/game-modes")
