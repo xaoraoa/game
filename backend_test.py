@@ -829,13 +829,152 @@ class IrysReflexAPITester:
             200
         )
 
+def test_irys_path_fix_verification():
+    """
+    SPECIFIC TEST FOR REVIEW REQUEST:
+    Test the Irys upload functionality after fixing the path issue.
+    Focus on:
+    1. Test the GET /api/health endpoint to ensure backend is running
+    2. Test the POST /api/irys/upload endpoint with sample data to ensure the Node.js subprocess fix works correctly
+    3. Test the GET /api/irys/network-info to verify network configuration
+    4. Verify that the Node.js dependencies are working and the Irys service can be called successfully
+    """
+    print("🔧 IRYS PATH FIX VERIFICATION TEST")
+    print("=" * 60)
+    print("🎯 FOCUS: Verifying Node.js subprocess path fix")
+    print("📝 Issue: 'No such file or directory: /app/backend' error")
+    print("✅ Fix: Using os.path.dirname(__file__) for dynamic path resolution")
+    print("=" * 60)
+    
+    tester = IrysReflexAPITester()
+    
+    # 1. Test GET /api/health endpoint to ensure backend is running
+    print("\n1️⃣ TESTING BACKEND HEALTH CHECK:")
+    health_success, health_data = tester.test_health_check()
+    if not health_success:
+        print("❌ CRITICAL: Backend health check failed!")
+        return False
+    print("✅ Backend is running and healthy")
+    
+    # 2. Test GET /api/irys/network-info to verify network configuration
+    print("\n2️⃣ TESTING IRYS NETWORK CONFIGURATION:")
+    network_success, network_data = tester.test_irys_network_info()
+    if not network_success:
+        print("❌ CRITICAL: Irys network configuration failed!")
+        return False
+    print("✅ Irys network configuration is working")
+    
+    # 3. Test POST /api/irys/upload endpoint with sample data
+    print("\n3️⃣ TESTING IRYS UPLOAD WITH SAMPLE SCORE DATA:")
+    
+    # Create realistic sample score data
+    sample_score_data = {
+        "player": "0x742d35Cc6634C0532925a3b8D0C9e3e4d6C87",
+        "username": "TestPlayer",
+        "time": 186,  # 186ms reaction time
+        "penalty": False,
+        "timestamp": datetime.utcnow().isoformat(),
+        "game_mode": "classic"
+    }
+    
+    upload_request = {
+        "data": json.dumps(sample_score_data),
+        "tags": [
+            {"name": "Content-Type", "value": "game-score"},
+            {"name": "Game-Mode", "value": "classic"},
+            {"name": "Player", "value": sample_score_data["player"]}
+        ],
+        "player_address": sample_score_data["player"]
+    }
+    
+    upload_success, upload_data = tester.run_test(
+        "Irys Upload with Sample Score Data",
+        "POST",
+        "api/irys/upload",
+        200,
+        data=upload_request
+    )
+    
+    if not upload_success:
+        print("❌ CRITICAL: Irys upload failed!")
+        return False
+    
+    # Verify we got a transaction ID
+    tx_id = upload_data.get("tx_id")
+    if not tx_id:
+        print("❌ CRITICAL: No transaction ID returned from upload!")
+        return False
+    
+    print(f"✅ Irys upload successful! Transaction ID: {tx_id}")
+    
+    # 4. Test that we can submit a score with the transaction ID
+    print("\n4️⃣ TESTING SCORE SUBMISSION WITH IRYS TX_ID:")
+    sample_score_data["tx_id"] = tx_id
+    
+    score_success, score_data = tester.run_test(
+        "Submit Score with Irys TX ID",
+        "POST",
+        "api/scores",
+        200,
+        data=sample_score_data
+    )
+    
+    if not score_success:
+        print("❌ Score submission with Irys TX ID failed!")
+        return False
+    
+    print("✅ Score submission with Irys TX ID successful!")
+    
+    # 5. Verify the score appears in leaderboard
+    print("\n5️⃣ TESTING LEADERBOARD RETRIEVAL:")
+    leaderboard_success, leaderboard_data = tester.run_test(
+        "Get Leaderboard with Irys Scores",
+        "GET",
+        "api/leaderboard",
+        200,
+        params={"limit": 10}
+    )
+    
+    if leaderboard_success:
+        print("✅ Leaderboard retrieval successful!")
+        # Check if our score is in the leaderboard
+        scores = leaderboard_data if isinstance(leaderboard_data, list) else []
+        irys_scores = [s for s in scores if s.get("tx_id") == tx_id]
+        if irys_scores:
+            print(f"✅ Our Irys score found in leaderboard with verified status: {irys_scores[0].get('verified', False)}")
+        else:
+            print("ℹ️ Our score not yet visible in leaderboard (may take time to propagate)")
+    
+    print("\n" + "=" * 60)
+    print("🎉 IRYS PATH FIX VERIFICATION COMPLETED SUCCESSFULLY!")
+    print("✅ All critical functionality verified:")
+    print("   • Backend health check: WORKING")
+    print("   • Irys network configuration: WORKING") 
+    print("   • Irys upload with sample data: WORKING")
+    print("   • Node.js subprocess path fix: WORKING")
+    print("   • Score submission with TX ID: WORKING")
+    print("   • No 'Upload failed' errors detected")
+    print("=" * 60)
+    
+    return True
+
 def main():
-    print("🚀 Starting Irys Devnet Integration Testing...")
+    print("🚀 Starting Irys Upload Functionality Testing After Path Fix...")
     print("=" * 80)
     print("🎯 FOCUS: Testing Node.js helper pattern for Irys integration")
     print("🌐 Network: Devnet (free uploads)")
     print("🔧 Pattern: Python FastAPI → Node.js Irys Service → Irys Devnet")
+    print("🛠️ SPECIFIC: Verifying path fix for Node.js subprocess")
     print("=" * 80)
+    
+    # Run the specific path fix verification test first
+    print("\n🔧 RUNNING SPECIFIC PATH FIX VERIFICATION TEST:")
+    path_fix_success = test_irys_path_fix_verification()
+    
+    if not path_fix_success:
+        print("\n❌ PATH FIX VERIFICATION FAILED!")
+        print("🔍 The Node.js subprocess path issue may not be fully resolved.")
+        return 1
     
     # Initialize tester with backend URL from frontend env
     tester = IrysReflexAPITester()
