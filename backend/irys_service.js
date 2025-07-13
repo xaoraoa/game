@@ -56,11 +56,18 @@ class IrysService {
             console.log('Uploading to Irys devnet...');
             
             // Add default tags
+            // Ensure tags is an array and each tag is properly formatted
+            const validTags = Array.isArray(tags) ? tags.filter(tag => 
+                tag && typeof tag === 'object' && 
+                typeof tag.name === 'string' && 
+                typeof tag.value === 'string'
+            ) : [];
+
             const allTags = [
                 { name: "App-Name", value: "IrysReflex" },
                 { name: "Content-Type", value: "application/json" },
                 { name: "Timestamp", value: Date.now().toString() },
-                ...tags
+                ...validTags
             ];
 
             const receipt = await this.uploader.upload(JSON.stringify(data), { tags: allTags });
