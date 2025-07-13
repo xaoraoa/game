@@ -748,18 +748,6 @@ const App = () => {
                     sequenceTimes={sequenceTimes}
                   />
                 )}
-                {/* Demo TwitterShare button for testing - always visible when game finished */}
-                {gameState === 'finished' && reactionTime && (
-                  <TwitterShare
-                    reactionTime={reactionTime}
-                    gameMode={selectedGameMode}
-                    username={username || 'Anonymous'}
-                    penalty={penalty}
-                    enduranceScore={enduranceScore}
-                    precisionAccuracy={precisionHits > 0 ? (precisionHits / (precisionHits + precisionMissed) * 100) : 0}
-                    sequenceTimes={sequenceTimes}
-                  />
-                )}
               </div>
             )}
           </div>
