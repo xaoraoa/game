@@ -18,3 +18,12 @@ toolz==1.0.0
 setuptools>=65.0.0
 wheel>=0.37.0
 pycryptodome
+eth_keys
+py_ecc
+hexbytes
+eth_rlp
+eth_abi
+parsimonious
+pyunormalize
+avro-python3
+base58
