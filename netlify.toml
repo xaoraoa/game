@@ -1,0 +1,16 @@
+[build]
+  base = "frontend"
+  command = "../build-frontend.sh"
+  publish = "frontend/build"
+
+[build.environment]
+  NODE_VERSION = "20"
+  YARN_VERSION = "1.22.22"
+  DISABLE_HOT_RELOAD = "true"
+  GENERATE_SOURCEMAP = "false"
+  NODE_OPTIONS = "--max-old-space-size=4096"
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
