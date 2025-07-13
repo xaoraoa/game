@@ -182,14 +182,16 @@ const AchievementsSystem = ({ playerAddress, gameStats }) => {
               a => a.achievement_type === availableAchievement.id
             ) : null;
           
-          return (
-            <AchievementCard
-              key={availableAchievement.id}
-              achievement={unlockedAchievement || availableAchievement}
-              isUnlocked={!!unlockedAchievement}
-            />
-          );
-        })}
+            return (
+              <AchievementCard
+                key={availableAchievement.id}
+                achievement={unlockedAchievement || availableAchievement}
+                isUnlocked={!!unlockedAchievement}
+              />
+            );
+          })
+          : <p>No achievements available</p>
+        }
       </div>
       
       {loading && (
