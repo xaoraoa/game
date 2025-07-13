@@ -425,6 +425,8 @@ async def call_irys_service(action, data=None, tags=None):
             "tags": tags or []
         }
         
+        print(f"🔧 Calling Irys service with action: {action}")
+        
         # Start the Node.js process
         process = await asyncio.create_subprocess_exec(
             'node', 'irys_service.js',
@@ -437,16 +439,37 @@ async def call_irys_service(action, data=None, tags=None):
         # Send request and get response
         stdout, stderr = await process.communicate(input=json.dumps(request_data).encode())
         
+        print(f"🔧 Node.js return code: {process.returncode}")
+        if stderr:
+            print(f"🔧 Node.js stderr: {stderr.decode()}")
+        
         if process.returncode != 0:
             print(f"Node.js process error: {stderr.decode()}")
             return {"success": False, "error": "Node.js process failed"}
         
         # Parse response - get the last line which should be JSON
         output_lines = stdout.decode().strip().split('\n')
-        json_line = output_lines[-1]  # Last line should be the JSON response
+        print(f"🔧 Output lines count: {len(output_lines)}")
+        
+        if not output_lines or not output_lines[-1].strip():
+            print("🔧 No output from Node.js service")
+            return {"success": False, "error": "No output from Node.js service"}
+        
+        json_line = output_lines[-1].strip()  # Last line should be the JSON response
+        print(f"🔧 JSON line: {json_line}")
+        
+        if not json_line:
+            print("🔧 Empty JSON line")
+            return {"success": False, "error": "Empty response from Node.js service"}
+        
         response = json.loads(json_line)
+        print(f"🔧 Parsed response success: {response.get('success', False)}")
         return response
         
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {str(e)}")
+        print(f"Raw output: {stdout.decode() if 'stdout' in locals() else 'No stdout'}")
+        return {"success": False, "error": f"JSON decode error: {str(e)}"}
     except Exception as e:
         print(f"Error calling Irys service: {str(e)}")
         return {"success": False, "error": str(e)}
