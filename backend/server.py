@@ -634,6 +634,8 @@ async def unlock_achievement(achievement: Achievement):
         result = await achievements_collection.insert_one(achievement_doc)
         
         if result.inserted_id:
+            # Remove ObjectId to avoid serialization issues
+            achievement_doc.pop('_id', None)
             return {"status": "unlocked", "achievement": achievement_doc}
         else:
             raise HTTPException(status_code=500, detail="Failed to unlock achievement")
