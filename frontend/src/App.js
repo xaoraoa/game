@@ -767,6 +767,21 @@ const App = () => {
 
         <div className="leaderboard-section">
           <h2 className="leaderboard-title">🏆 Leaderboard - {getGameModeDisplayName(selectedGameMode)}</h2>
+          
+          {/* Demo Twitter Share Button for Testing */}
+          <div className="demo-section" style={{marginBottom: '20px', textAlign: 'center'}}>
+            <h3 style={{color: '#00FFD1', marginBottom: '10px'}}>🐦 Twitter Share Demo</h3>
+            <TwitterShare
+              reactionTime={250}
+              gameMode="classic"
+              username="DemoPlayer"
+              penalty={false}
+              enduranceScore={0}
+              precisionAccuracy={95.5}
+              sequenceTimes={[240, 260, 250]}
+            />
+          </div>
+          
           <div className="leaderboard">
             {!Array.isArray(leaderboard) || leaderboard.length === 0 ? (
               <p className="no-scores">No scores yet for {getGameModeDisplayName(selectedGameMode)} mode. Be the first!</p>
