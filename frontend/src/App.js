@@ -737,6 +737,17 @@ const App = () => {
                     {uploading ? 'Saving to Irys...' : 'Save to Irys'}
                   </button>
                 )}
+                {username && reactionTime && (
+                  <TwitterShare
+                    reactionTime={reactionTime}
+                    gameMode={selectedGameMode}
+                    username={username}
+                    penalty={penalty}
+                    enduranceScore={enduranceScore}
+                    precisionAccuracy={precisionHits > 0 ? (precisionHits / (precisionHits + precisionMissed) * 100) : 0}
+                    sequenceTimes={sequenceTimes}
+                  />
+                )}
               </div>
             )}
           </div>
