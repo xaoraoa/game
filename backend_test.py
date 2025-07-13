@@ -722,9 +722,16 @@ def main():
     # Test 2: Irys Blockchain Integration
     print("\n🔗 Testing Irys Blockchain Integration...")
     tester.test_irys_public_key()
-    tester.test_irys_sign_message()
-    tester.test_irys_upload_data()
     tester.test_irys_network_info()
+    tester.test_irys_balance()
+    tester.test_irys_upload_price()
+    tester.test_irys_fund_account()
+    tester.test_irys_sign_message()
+    tester.test_irys_sign_complex_message()
+    tester.test_irys_upload_data()
+    tester.test_irys_upload_with_custom_tags()
+    tester.test_irys_upload_large_data()
+    tester.test_end_to_end_irys_score_flow()
     
     # Test 3: Achievement System
     print("\n🏆 Testing Achievement System...")
