@@ -377,13 +377,25 @@ const App = () => {
       return;
     }
 
-    if (!walletAddress) {
-      toast.error('Wallet not connected');
+    if (!walletConnected || !walletAddress) {
+      toast.error('Please connect your wallet first');
       return;
     }
 
     if (reactionTime === null && selectedGameMode !== 'endurance') {
       toast.error('No reaction time recorded');
+      return;
+    }
+
+    // Check balance before uploading
+    if (irysBalance !== null && irysBalance < 1000) {
+      toast.error('Insufficient balance. Please fund your account with IRYS tokens.', {
+        duration: 6000,
+        action: {
+          label: 'Fund Account',
+          onClick: handleFundAccount
+        }
+      });
       return;
     }
 
@@ -412,10 +424,13 @@ const App = () => {
       }
 
       // Upload to Irys
+      toast.loading('Uploading to Irys blockchain...', { id: 'upload' });
       const txId = await uploadScore(scoreData);
       setLastTxId(txId);
+      toast.success('✅ Uploaded to Irys!', { id: 'upload' });
 
       // Submit to backend
+      toast.loading('Saving score...', { id: 'save' });
       const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/scores`, {
         method: 'POST',
         headers: {
@@ -438,14 +453,35 @@ const App = () => {
 
       if (response.ok) {
         const result = await response.json();
-        toast.success(`✅ Score saved to Irys! ${result.verified ? 'Verified' : 'Pending verification'}`);
+        toast.success(`🎉 Score saved! ${result.verified ? 'Verified on Irys' : 'Pending verification'}`, { id: 'save' });
         fetchLeaderboard();
+        // Refresh balance after successful upload
+        await checkBalance();
       } else {
         throw new Error('Failed to save score to backend');
       }
     } catch (error) {
       console.error("Error uploading to Irys:", error);
-      toast.error("Failed to upload score: " + error.message);
+      
+      // Handle specific error cases
+      if (error.message.includes('insufficient balance') || error.message.includes('Insufficient balance')) {
+        toast.error('💸 Insufficient IRYS balance! Please fund your account.', { 
+          id: 'upload',
+          duration: 6000,
+          action: {
+            label: 'Get Tokens',
+            onClick: () => {
+              if (networkInfo?.config?.faucet_url) {
+                window.open(networkInfo.config.faucet_url, '_blank');
+              }
+            }
+          }
+        });
+      } else if (error.message.includes('rejected')) {
+        toast.error('Transaction was rejected by user', { id: 'upload' });
+      } else {
+        toast.error("❌ Failed to upload: " + error.message, { id: 'upload' });
+      }
     } finally {
       setUploading(false);
     }
