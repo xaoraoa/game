@@ -526,6 +526,162 @@ body {
   margin-bottom: 3rem;
 }
 
+/* Wallet Connection States */
+.wallet-connect {
+  text-align: center;
+  padding: 2rem;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  backdrop-filter: blur(10px);
+}
+
+.wallet-status {
+  margin-bottom: 1.5rem;
+}
+
+.wallet-status h3 {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+  color: var(--irys-cyan);
+}
+
+.wallet-status p {
+  opacity: 0.8;
+  margin-bottom: 0;
+}
+
+.connect-wallet-btn {
+  background: linear-gradient(135deg, var(--irys-cyan), #00D4AA);
+  color: var(--black-core);
+  border: none;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 20px rgba(0, 255, 209, 0.3);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+}
+
+.connect-wallet-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 255, 209, 0.4);
+}
+
+.connect-wallet-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.metamask-warning {
+  margin-top: 1rem;
+  padding: 1rem;
+  background: rgba(255, 193, 7, 0.1);
+  border: 1px solid rgba(255, 193, 7, 0.3);
+  border-radius: 8px;
+  font-size: 0.9rem;
+}
+
+.metamask-warning a {
+  color: var(--irys-cyan);
+  text-decoration: none;
+}
+
+.metamask-warning a:hover {
+  text-decoration: underline;
+}
+
+/* Connected Wallet State */
+.wallet-connected {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.wallet-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.wallet-address {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.wallet-address .address {
+  background: rgba(0, 255, 209, 0.1);
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+}
+
+.irys-balance {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.irys-balance .balance {
+  background: rgba(58, 0, 122, 0.3);
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.9rem;
+}
+
+.fund-btn {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: var(--black-core);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.fund-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.network-info {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  font-size: 0.9rem;
+}
+
+.faucet-link {
+  background: rgba(0, 123, 255, 0.1);
+  color: var(--irys-cyan);
+  text-decoration: none;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+}
+
+.faucet-link:hover {
+  background: rgba(0, 123, 255, 0.2);
+  text-decoration: none;
+}
+
 .connect-btn {
   background: linear-gradient(135deg, var(--irys-cyan), #00D4AA);
   color: var(--black-core);
@@ -544,16 +700,6 @@ body {
 .connect-btn:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 255, 209, 0.4);
-}
-
-.wallet-info {
-  background: var(--glass-bg);
-  border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  padding: 16px 24px;
-  backdrop-filter: blur(10px);
-  display: inline-block;
-  margin-bottom: 1rem;
 }
 
 .username-section {
