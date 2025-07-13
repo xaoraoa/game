@@ -144,6 +144,14 @@ async function main() {
 
     process.stdin.on('end', async () => {
         try {
+            if (!inputData.trim()) {
+                console.log(JSON.stringify({
+                    success: false,
+                    error: 'No input data received'
+                }));
+                return;
+            }
+
             const request = JSON.parse(inputData);
             let response;
 
@@ -164,11 +172,12 @@ async function main() {
                     response = { success: false, error: 'Unknown action' };
             }
 
+            // Ensure we always output valid JSON
             console.log(JSON.stringify(response));
         } catch (error) {
             console.log(JSON.stringify({
                 success: false,
-                error: error.message
+                error: error.message || 'Unknown error occurred'
             }));
         }
     });
