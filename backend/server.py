@@ -530,21 +530,81 @@ async def upload_to_irys(request: IrysUploadRequest):
         print(f"Irys upload error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
+@app.get("/api/irys/balance")
+async def get_irys_balance():
+    """Get current Irys account balance"""
+    if not irys_client:
+        raise HTTPException(status_code=500, detail="Irys client not configured")
+    
+    try:
+        balance = irys_client.balance()
+        return {
+            "balance": balance,
+            "address": account.address if account else None,
+            "network": IRYS_NETWORK
+        }
+    except Exception as e:
+        print(f"Balance check error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to check balance: {str(e)}")
+
+@app.post("/api/irys/fund")
+async def fund_irys_account(amount: int = 10000):
+    """Fund Irys account with specified amount (in atomic units)"""
+    if not irys_client:
+        raise HTTPException(status_code=500, detail="Irys client not configured")
+    
+    try:
+        fund_tx = irys_client.fund(amount)
+        return {
+            "success": True,
+            "transaction": str(fund_tx),
+            "amount": amount,
+            "message": f"Account funded with {amount} atomic units"
+        }
+    except Exception as e:
+        print(f"Funding error: {str(e)}")
+        # Check if it's a balance issue
+        if "insufficient" in str(e).lower():
+            raise HTTPException(
+                status_code=402,
+                detail=f"Insufficient balance to fund. Please visit https://irys.xyz/faucet to get testnet tokens."
+            )
+        raise HTTPException(status_code=500, detail=f"Funding failed: {str(e)}")
+
+@app.get("/api/irys/upload-price")
+async def get_upload_price(data_size: int):
+    """Get price estimate for uploading data of given size"""
+    if not irys_client:
+        raise HTTPException(status_code=500, detail="Irys client not configured")
+    
+    try:
+        price = irys_client.get_price(data_size)
+        return {
+            "data_size": data_size,
+            "price": price,
+            "network": IRYS_NETWORK
+        }
+    except Exception as e:
+        print(f"Price check error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to get price: {str(e)}")
+
 @app.get("/api/irys/network-info")
 async def get_network_info():
     """Get current Irys network information"""
     network_config = {
         "testnet": {
             "name": "Irys Testnet",
-            "rpc_url": "https://rpc.devnet.irys.xyz/v1",
-            "gateway_url": "https://devnet.irys.xyz",
-            "explorer_url": "https://testnet.irys.xyz"
+            "rpc_url": IRYS_RPC_URL,
+            "gateway_url": GATEWAY_URL,
+            "explorer_url": "https://testnet.irys.xyz",
+            "faucet_url": "https://irys.xyz/faucet"
         },
         "mainnet": {
             "name": "Irys Mainnet",
-            "rpc_url": "https://rpc.irys.xyz/v1",
-            "gateway_url": "https://gateway.irys.xyz",
-            "explorer_url": "https://irys.xyz"
+            "rpc_url": IRYS_RPC_URL,
+            "gateway_url": GATEWAY_URL,
+            "explorer_url": "https://irys.xyz",
+            "faucet_url": None
         }
     }
     
@@ -553,7 +613,8 @@ async def get_network_info():
     return {
         "network": IRYS_NETWORK,
         "config": current_network,
-        "account": account.address if account else None
+        "account": account.address if account else None,
+        "client_status": "connected" if irys_client else "disconnected"
     }
 
 # ============================
