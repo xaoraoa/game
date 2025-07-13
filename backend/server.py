@@ -412,6 +412,43 @@ async def sign_message(request: SignRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Signing failed: {str(e)}")
 
+import subprocess
+import json
+import asyncio
+
+async def call_irys_service(action, data=None, tags=None):
+    """Call the Node.js Irys service helper"""
+    try:
+        request_data = {
+            "action": action,
+            "data": data,
+            "tags": tags or []
+        }
+        
+        # Start the Node.js process
+        process = await asyncio.create_subprocess_exec(
+            'node', 'irys_service.js',
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd='/app/backend'
+        )
+        
+        # Send request and get response
+        stdout, stderr = await process.communicate(input=json.dumps(request_data).encode())
+        
+        if process.returncode != 0:
+            print(f"Node.js process error: {stderr.decode()}")
+            return {"success": False, "error": "Node.js process failed"}
+        
+        # Parse response
+        response = json.loads(stdout.decode().strip())
+        return response
+        
+    except Exception as e:
+        print(f"Error calling Irys service: {str(e)}")
+        return {"success": False, "error": str(e)}
+
 @app.post("/api/irys/upload")
 async def upload_to_irys(request: IrysUploadRequest):
     """Upload data to Irys blockchain using official SDK"""
