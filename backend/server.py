@@ -326,6 +326,11 @@ async def health_check():
         "timestamp": datetime.utcnow().isoformat()
     }
 
+@app.options("/api/{path:path}")
+async def options_handler():
+    """Handle CORS preflight requests"""
+    return {"message": "OK"}
+
 @app.get("/api/game-modes")
 async def get_game_modes():
     """Get available game modes with their descriptions"""
