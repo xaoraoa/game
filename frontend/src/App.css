@@ -10,6 +10,44 @@
 }
 
 /* ============================
+   TWITTER SHARE BUTTON STYLES
+   ============================ */
+
+.twitter-share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: linear-gradient(135deg, #1DA1F2 0%, #0d8bd9 100%);
+  border: none;
+  border-radius: 10px;
+  color: white;
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(29, 161, 242, 0.3);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.twitter-share-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(29, 161, 242, 0.4);
+  background: linear-gradient(135deg, #0d8bd9 0%, #1DA1F2 100%);
+}
+
+.twitter-share-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.twitter-share-btn span:first-child {
+  font-size: 1.1rem;
+}
+
+/* ============================
    WALLET CONNECTION STYLES
    ============================ */
 
