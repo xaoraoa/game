@@ -3,7 +3,7 @@ services:
   - type: web
     name: irys-reflex-frontend
     env: static
-    buildCommand: cd frontend && yarn install && yarn build
+    buildCommand: ./build-frontend.sh
     staticPublishPath: frontend/build
     headers:
       - path: /*
