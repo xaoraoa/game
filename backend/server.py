@@ -508,7 +508,13 @@ async def upload_to_irys_via_node(request: IrysUploadRequest):
         
         # Add custom tags from request
         if request.tags:
-            tags.extend([{"name": tag["name"], "value": tag["value"]} for tag in request.tags])
+            for tag in request.tags:
+                # Ensure each tag is properly formatted
+                if isinstance(tag, dict) and "name" in tag and "value" in tag:
+                    tags.append({"name": str(tag["name"]), "value": str(tag["value"])})
+                else:
+                    print(f"Warning: Invalid tag format: {tag}")
+                    # Skip invalid tags instead of failing
         
         # Call Node.js service
         response = await call_irys_service("upload", data_to_upload, tags)
