@@ -39,6 +39,27 @@ module.exports = {
         })
       );
       
+      // Production build optimizations
+      if (process.env.NODE_ENV === 'production') {
+        // Disable source maps in production to reduce build size
+        webpackConfig.devtool = false;
+        
+        // Optimize chunks
+        webpackConfig.optimization = {
+          ...webpackConfig.optimization,
+          splitChunks: {
+            chunks: 'all',
+            cacheGroups: {
+              vendor: {
+                test: /[\\/]node_modules[\\/]/,
+                name: 'vendors',
+                chunks: 'all',
+              },
+            },
+          },
+        };
+      }
+      
       // Disable hot reload completely if environment variable is set
       if (config.disableHotReload) {
         // Remove hot reload related plugins
