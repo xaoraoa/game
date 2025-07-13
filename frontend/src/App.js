@@ -11,6 +11,7 @@ import {
   getNetworkInfo
 } from './lib/irys';
 import { initKeepAlive } from './utils/keepAlive';
+import TwitterShare from './components/TwitterShare';
 import './App.css';
 
 const App = () => {
