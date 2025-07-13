@@ -27,4 +27,4 @@ parsimonious
 pyunormalize
 avro-python3
 base58
-Pillow==10.1.0
+Pillow==10.4.0
