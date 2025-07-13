@@ -45,9 +45,19 @@ const App = () => {
   const timeoutRef = useRef(null);
   const audioContextRef = useRef(null);
 
-  // Initialize Web Audio API
+  // Initialize Web Audio API and keep-alive service
   useEffect(() => {
     audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // Initialize keep-alive service to prevent Render dyno sleep
+    const cleanupKeepAlive = initKeepAlive();
+    
+    // Cleanup function
+    return () => {
+      if (cleanupKeepAlive) {
+        cleanupKeepAlive();
+      }
+    };
   }, []);
 
   // Initialize components on mount
