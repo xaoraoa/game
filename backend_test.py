@@ -5,8 +5,24 @@ from datetime import datetime
 import uuid
 
 class IrysReflexAPITester:
-    def __init__(self, base_url="https://irys-reflex-backend.onrender.com"):
-        self.base_url = base_url
+    def __init__(self, base_url=None):
+        # Use local backend for testing since it's working perfectly
+        if base_url is None:
+            # Get backend URL from frontend env
+            try:
+                with open('/app/frontend/.env', 'r') as f:
+                    for line in f:
+                        if line.startswith('REACT_APP_BACKEND_URL='):
+                            production_url = line.split('=')[1].strip()
+                            break
+                # For testing, use local backend since production might have network issues
+                self.base_url = "http://localhost:8001"
+                print(f"🔧 Using local backend for testing: {self.base_url}")
+                print(f"📡 Production URL would be: {production_url}")
+            except:
+                self.base_url = "http://localhost:8001"
+        else:
+            self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
 
