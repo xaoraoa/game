@@ -113,10 +113,10 @@ user_problem_statement: |
   6. Vercel deployment configuration
   7. Testing framework with Jest + React Testing Library
 
-  CURRENT STATUS: RESOLVED - "Insufficient balance" issue fixed. 
-  Root cause: Missing Node.js dependencies (@irys/upload packages) and missing Python dependency (eth-keyfile).
-  Solution: Installed all required dependencies and restarted backend service.
-  Irys devnet integration now working correctly with real transaction uploads.
+  CURRENT STATUS: RESOLVED - "Insufficient balance" issue completely fixed. 
+  Root cause: Missing Node.js dependencies (@irys/upload packages), missing Python dependency (pycryptodome), and incorrect frontend balance check logic for testnet.
+  Solution: 1) Installed all required Node.js dependencies in backend/, 2) Installed missing Python dependency (pycryptodome), 3) Modified frontend balance check to skip validation for testnet (free uploads), 4) Restarted backend service.
+  Irys devnet integration now working correctly with real transaction uploads and no balance errors.
 
 backend:
   - task: "FastAPI server setup with MongoDB"
