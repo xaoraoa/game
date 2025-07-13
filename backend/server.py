@@ -328,6 +328,54 @@ async def health_check():
         "timestamp": datetime.utcnow().isoformat()
     }
 
+@app.post("/api/upload-screenshot")
+async def upload_screenshot(
+    screenshot: UploadFile = File(...),
+    username: str = Form(...),
+    gameMode: str = Form(...),
+    reactionTime: str = Form(...)
+):
+    """Upload and serve screenshot for Twitter sharing"""
+    try:
+        # Create screenshots directory if it doesn't exist
+        screenshots_dir = Path("screenshots")
+        screenshots_dir.mkdir(exist_ok=True)
+        
+        # Generate unique filename
+        file_extension = screenshot.filename.split('.')[-1] if '.' in screenshot.filename else 'png'
+        unique_filename = f"{uuid.uuid4()}.{file_extension}"
+        file_path = screenshots_dir / unique_filename
+        
+        # Save the uploaded file
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(screenshot.file, buffer)
+        
+        # Generate the URL that will serve this image
+        image_url = f"{os.environ.get('BACKEND_URL', 'http://localhost:8001')}/api/screenshots/{unique_filename}"
+        
+        return {
+            "success": True,
+            "imageUrl": image_url,
+            "filename": unique_filename
+        }
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to upload screenshot: {str(e)}")
+
+@app.get("/api/screenshots/{filename}")
+async def serve_screenshot(filename: str):
+    """Serve uploaded screenshots"""
+    file_path = Path("screenshots") / filename
+    
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="Screenshot not found")
+    
+    return FileResponse(
+        path=file_path,
+        media_type="image/png",
+        headers={"Cache-Control": "public, max-age=3600"}
+    )
+
 @app.options("/api/{path:path}")
 async def options_handler(path: str):
     """Handle CORS preflight requests"""
