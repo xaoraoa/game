@@ -429,7 +429,7 @@ async def call_irys_service(action, data=None, tags=None):
         
         # Start the Node.js process
         process = await asyncio.create_subprocess_exec(
-            'node', 'irys_service.js',
+            '/usr/bin/node', 'irys_service.js',
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
