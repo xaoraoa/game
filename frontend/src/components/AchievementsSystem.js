@@ -42,8 +42,8 @@ const AchievementsSystem = ({ playerAddress, gameStats }) => {
   const checkForNewAchievements = async () => {
     if (!gameStats || !playerAddress) return;
 
-    const unlockedTypes = achievements.map(a => a.achievement_type);
-    const toCheck = availableAchievements.filter(a => !unlockedTypes.includes(a.id));
+    const unlockedTypes = Array.isArray(achievements) ? achievements.map(a => a.achievement_type) : [];
+    const toCheck = Array.isArray(availableAchievements) ? availableAchievements.filter(a => !unlockedTypes.includes(a.id)) : [];
 
     for (const achievement of toCheck) {
       if (shouldUnlockAchievement(achievement, gameStats)) {
