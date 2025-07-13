@@ -11,12 +11,11 @@ echo "🚀 Starting Render build process for Irys Reflex Frontend..."
 cd frontend
 
 echo "📦 Installing frontend dependencies..."
-# Clear any existing node_modules and lockfiles that might cause conflicts
+# Only clear node_modules if they're corrupted, keep lockfiles for consistency
 rm -rf node_modules
-rm -f yarn.lock package-lock.json
 
-# Install dependencies with frozen lockfile disabled for first run
-yarn install --no-frozen-lockfile
+# Install dependencies with existing lockfile for consistency
+yarn install --frozen-lockfile
 
 echo "🔧 Updating browser data..."
 # Update browserslist data to resolve warnings
@@ -64,7 +63,7 @@ echo "✅ Build completed successfully - Size: $BUILD_SIZE"
 
 echo "🎉 Frontend build completed successfully!"
 echo "📋 Build Summary:"
-echo "   - Dependencies: ✅ Installed (fresh)"
+echo "   - Dependencies: ✅ Installed (with lockfile)"
 echo "   - Browser data: ✅ Updated" 
 echo "   - Production build: ✅ Created"
 echo "   - Build size: $BUILD_SIZE"
