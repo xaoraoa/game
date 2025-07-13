@@ -176,10 +176,11 @@ const AchievementsSystem = ({ playerAddress, gameStats }) => {
       </h2>
       
       <div className="achievements-grid">
-        {availableAchievements.map(availableAchievement => {
-          const unlockedAchievement = achievements.find(
-            a => a.achievement_type === availableAchievement.id
-          );
+        {Array.isArray(availableAchievements) && availableAchievements.length
+          ? availableAchievements.map(availableAchievement => {
+            const unlockedAchievement = Array.isArray(achievements) ? achievements.find(
+              a => a.achievement_type === availableAchievement.id
+            ) : null;
           
           return (
             <AchievementCard
