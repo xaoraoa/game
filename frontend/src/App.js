@@ -1,6 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import toast, { Toaster } from 'react-hot-toast';
-import { uploadScore, getWalletAddress, getIrysExplorerUrl } from './lib/irys';
+import { 
+  uploadScore, 
+  getWalletAddress, 
+  getIrysExplorerUrl, 
+  checkWalletConnection, 
+  connectWallet,
+  checkIrysBalance,
+  fundIrysAccount,
+  getNetworkInfo
+} from './lib/irys';
 import './App.css';
 
 const App = () => {
