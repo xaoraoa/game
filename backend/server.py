@@ -26,7 +26,7 @@ origins = [
     "https://irys-reflex-frontend.onrender.com",  # Your Render frontend URL
     "http://localhost:3000",                       # Local development
     "http://localhost:5173",                       # Vite development
-    "https://37d02e6d-b8e1-45ef-ab68-f5d7035eb67f.preview.emergentagent.com"  # Dev environment
+    "https://cad74126-a519-47e7-a2d4-9e84c81e2151.preview.emergentagent.com"  # Dev environment
 ]
 
 app.add_middleware(
