@@ -406,7 +406,7 @@ async def upload_to_irys(request: IrysUploadRequest):
         
         # Check balance before upload
         try:
-            balance = irys_client.balance()
+            balance = irys_client.get_balance()
             print(f"Current Irys balance: {balance}")
             
             # Get upload price
