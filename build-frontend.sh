@@ -18,7 +18,7 @@ rm -rf node_modules
 echo "🔧 Attempting install with frozen lockfile..."
 if ! yarn install --frozen-lockfile; then
     echo "⚠️ Frozen lockfile failed, updating lockfile..."
-    yarn install --no-frozen-lockfile
+    yarn install
 fi
 
 echo "🔧 Updating browser data..."
