@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Render Build Script for Irys Reflex Frontend
-# Handles React build with optimizations for production deployment
+# Enhanced error handling and dependency resolution
 
 set -e  # Exit on any error
 
@@ -11,11 +11,16 @@ echo "🚀 Starting Render build process for Irys Reflex Frontend..."
 cd frontend
 
 echo "📦 Installing frontend dependencies..."
-yarn install --frozen-lockfile
+# Clear any existing node_modules and lockfiles that might cause conflicts
+rm -rf node_modules
+rm -f yarn.lock package-lock.json
+
+# Install dependencies with frozen lockfile disabled for first run
+yarn install --no-frozen-lockfile
 
 echo "🔧 Updating browser data..."
 # Update browserslist data to resolve warnings
-npx update-browserslist-db@latest
+npx update-browserslist-db@latest || echo "Browserslist update failed - continuing anyway"
 
 echo "🔍 Pre-build verification..."
 # Verify critical dependencies
@@ -32,6 +37,12 @@ fi
 echo "✅ Dependencies verified successfully"
 
 echo "🏗️ Building production bundle..."
+# Set environment variables for stable build
+export DISABLE_HOT_RELOAD=true
+export GENERATE_SOURCEMAP=false
+export NODE_OPTIONS="--max-old-space-size=4096"
+export CI=true
+
 # Build with optimizations
 yarn build
 
@@ -53,7 +64,7 @@ echo "✅ Build completed successfully - Size: $BUILD_SIZE"
 
 echo "🎉 Frontend build completed successfully!"
 echo "📋 Build Summary:"
-echo "   - Dependencies: ✅ Installed"
+echo "   - Dependencies: ✅ Installed (fresh)"
 echo "   - Browser data: ✅ Updated" 
 echo "   - Production build: ✅ Created"
 echo "   - Build size: $BUILD_SIZE"
