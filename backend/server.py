@@ -427,13 +427,24 @@ async def call_irys_service(action, data=None, tags=None):
         
         print(f"🔧 Calling Irys service with action: {action}")
         
+        # Get the directory where this script is located
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        irys_service_path = os.path.join(current_dir, 'irys_service.js')
+        
+        print(f"Current directory: {current_dir}")
+        print(f"Irys service path: {irys_service_path}")
+        
+        # Check if the service file exists
+        if not os.path.exists(irys_service_path):
+            raise Exception(f"Irys service file not found at: {irys_service_path}")
+        
         # Start the Node.js process
         process = await asyncio.create_subprocess_exec(
-            '/usr/bin/node', 'irys_service.js',
+            'node', irys_service_path,
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,
-            cwd='/app/backend'
+            cwd=current_dir
         )
         
         # Send request and get response
