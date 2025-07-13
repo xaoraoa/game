@@ -34,7 +34,10 @@
     ]
   },
   "devDependencies": {
+    "@babel/core": "^7.25.0",
     "@babel/plugin-proposal-private-property-in-object": "^7.21.11",
+    "@babel/plugin-syntax-flow": "^7.24.0",
+    "@babel/plugin-transform-react-jsx": "^7.25.0",
     "@craco/craco": "^7.1.0",
     "@eslint/js": "9.23.0",
     "@types/node": "^24.0.13",
@@ -59,7 +62,8 @@
     "stream-browserify": "^3.0.0",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.8.3",
-    "url": "^0.11.4"
+    "url": "^0.11.4",
+    "webpack": "^5.95.0"
   },
   "packageManager": "yarn@1.22.22"
 }
