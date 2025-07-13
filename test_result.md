@@ -182,7 +182,20 @@ backend:
         agent: "testing"
         comment: "Comprehensive testing of enhanced Game Modes feature completed successfully. All 21 tests passed (100% success rate). Verified: NEW /api/game-modes endpoint returns all 4 game modes (classic, sequence, endurance, precision) with proper descriptions and icons. Enhanced POST /api/scores accepts game_mode field and mode-specific fields (hits_count for endurance, accuracy for precision, sequence_times array for sequence, total_targets). Enhanced GET /api/leaderboard supports game_mode query parameter filtering with correct sorting logic (endurance mode sorted by hits_count descending, all other modes sorted by time ascending). Database schema correctly stores and indexes all new fields including game_mode, hits_count, accuracy, sequence_times, total_targets. Backward compatibility fully maintained - scores submitted without game_mode field default to 'classic' mode. Mixed mode leaderboard functionality works correctly showing all game modes together. All original API functionality remains intact and working. Game Modes feature is production-ready and fully functional."
 
-  - task: "Render-ready backend deployment setup"
+  - task: "Python Dependencies Fix for Deployment"
+    implemented: true
+    working: true
+    file: "/app/backend/requirements.txt"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: false
+    status_history:
+      - working: true
+        agent: "main"
+        comment: "Fixed deployment failures caused by Python dependency conflicts. Updated requirements.txt with compatible versions: eth-account==0.8.0, eth-keyfile==0.6.1, hexbytes==0.3.1, eth_keys==0.4.0, eth_rlp==0.3.0. All backend endpoints now working correctly."
+      - working: true
+        agent: "testing"
+        comment: "Comprehensive backend testing completed successfully after dependency fixes. All 14 critical endpoints tested with 100% success rate: Health check, game modes, score submission, leaderboard, social sharing upload/serve, player stats, and all Irys integration endpoints working perfectly. Node.js dependencies (@irys/upload packages) verified functional. Real blockchain integration operational with transaction IDs retrievable from gateway. Backend is production-ready."
     implemented: true
     working: true
     file: "/app/backend/server.py"
