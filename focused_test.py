@@ -4,7 +4,7 @@ from datetime import datetime
 import uuid
 
 def test_focused_endpoints():
-    base_url = "https://cad74126-a519-47e7-a2d4-9e84c81e2151.preview.emergentagent.com"
+    base_url = "https://1840450b-20ab-4210-92e6-4aa9fad430ec.preview.emergentagent.com"
     
     print("🔍 Testing Achievement Types...")
     response = requests.get(f"{base_url}/api/achievements/types")
