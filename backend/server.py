@@ -441,8 +441,10 @@ async def call_irys_service(action, data=None, tags=None):
             print(f"Node.js process error: {stderr.decode()}")
             return {"success": False, "error": "Node.js process failed"}
         
-        # Parse response
-        response = json.loads(stdout.decode().strip())
+        # Parse response - get the last line which should be JSON
+        output_lines = stdout.decode().strip().split('\n')
+        json_line = output_lines[-1]  # Last line should be the JSON response
+        response = json.loads(json_line)
         return response
         
     except Exception as e:
