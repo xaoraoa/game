@@ -21,13 +21,21 @@ load_dotenv()
 
 app = FastAPI()
 
-# CORS middleware
+# CORS middleware - Render-specific configuration
+origins = [
+    "https://irys-reflex-frontend.onrender.com",  # Your Render frontend URL
+    "http://localhost:3000",                       # Local development
+    "http://localhost:5173",                       # Vite development
+    "https://640dd7bd-d685-4cbd-8bd1-8e5b28dbc755.preview.emergentagent.com"  # Dev environment
+]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "Authorization", "Origin", "Accept"],
+    expose_headers=["*"],
 )
 
 # MongoDB connection
