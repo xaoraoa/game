@@ -625,6 +625,13 @@ async def get_upload_price(data_size: int):
 async def get_network_info():
     """Get current Irys network information"""
     network_config = {
+        "devnet": {
+            "name": "Irys Devnet",
+            "rpc_url": IRYS_RPC_URL,
+            "gateway_url": GATEWAY_URL,
+            "explorer_url": "https://devnet.irys.xyz",
+            "faucet_url": "https://irys.xyz/faucet"
+        },
         "testnet": {
             "name": "Irys Testnet",
             "rpc_url": IRYS_RPC_URL,
@@ -641,7 +648,7 @@ async def get_network_info():
         }
     }
     
-    current_network = network_config.get(IRYS_NETWORK, network_config["testnet"])
+    current_network = network_config.get(IRYS_NETWORK, network_config["devnet"])
     
     return {
         "network": IRYS_NETWORK,
