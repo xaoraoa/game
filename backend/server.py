@@ -450,154 +450,67 @@ async def call_irys_service(action, data=None, tags=None):
         return {"success": False, "error": str(e)}
 
 @app.post("/api/irys/upload")
-async def upload_to_irys(request: IrysUploadRequest):
-    """Upload data to Irys blockchain using official SDK"""
-    if not irys_client:
-        raise HTTPException(status_code=500, detail="Irys client not configured")
-    
+async def upload_to_irys_via_node(request: IrysUploadRequest):
+    """Upload data to Irys using Node.js helper (devnet - free uploads)"""
     try:
-        # Prepare data for Irys upload
-        data_to_upload = request.data
-        tags = request.tags or []
+        print(f"📤 Uploading to Irys devnet via Node.js helper")
         
-        # Add default tags
-        default_tags = [
-            ("App-Name", "IrysReflex"),
-            ("Content-Type", "application/json"),
-            ("Timestamp", str(int(time.time() * 1000))),
-            ("Player", request.player_address)
+        # Prepare data
+        data_to_upload = {
+            "player": request.player_address,
+            "data": request.data,
+            "tags": request.tags or [],
+            "timestamp": int(time.time() * 1000)
+        }
+        
+        # Prepare tags
+        tags = [
+            {"name": "App-Name", "value": "IrysReflex"},
+            {"name": "Content-Type", "value": "application/json"},
+            {"name": "Player", "value": request.player_address},
+            {"name": "Timestamp", "value": str(int(time.time() * 1000))}
         ]
         
-        # Convert tags to tuple format expected by Irys SDK
-        all_tags = default_tags + [(tag["name"], tag["value"]) for tag in tags]
+        # Add custom tags from request
+        if request.tags:
+            tags.extend([{"name": tag["name"], "value": tag["value"]} for tag in request.tags])
         
-        # Convert data to bytes
-        data_bytes = data_to_upload.encode('utf-8')
+        # Call Node.js service
+        response = await call_irys_service("upload", data_to_upload, tags)
         
-        # Check balance before upload
-        try:
-            balance = irys_client.get_balance()
-            print(f"Current Irys balance: {balance}")
+        if response.get("success"):
+            tx_id = response.get("tx_id")
             
-            # Get upload price
-            upload_price = irys_client.get_price(len(data_bytes))
-            print(f"Upload price: {upload_price}")
-            
-            if balance < upload_price:
-                # Try to fund the account
-                try:
-                    fund_amount = max(upload_price * 2, 10000)  # Fund with at least 2x upload price or 10000 wei
-                    print(f"Insufficient balance. Attempting to fund with {fund_amount}")
-                    fund_tx = irys_client.fund(fund_amount)
-                    print(f"Funded successfully: {fund_tx}")
-                except Exception as fund_error:
-                    print(f"Auto-funding failed: {str(fund_error)}")
-                    raise HTTPException(
-                        status_code=402, 
-                        detail=f"Insufficient balance. Required: {upload_price}, Available: {balance}. Please fund your account at https://irys.xyz/faucet"
-                    )
-        except Exception as balance_error:
-            print(f"Balance check failed: {str(balance_error)}")
-            # Continue anyway, maybe it's a network issue
-        
-        # Upload to Irys using SDK
-        try:
-            upload_response = irys_client.upload(data_bytes, tags=all_tags)
-            print(f"Upload successful: {upload_response}")
-            
-            # Extract transaction ID from response
-            if hasattr(upload_response, 'id'):
-                tx_id = upload_response.id
-            elif isinstance(upload_response, dict) and 'id' in upload_response:
-                tx_id = upload_response['id']
-            else:
-                # Fallback - create our own transaction ID
-                content_hash = hashlib.sha256(data_bytes).hexdigest()
-                timestamp = int(time.time() * 1000)
-                tx_id = f"irys-{content_hash[:16]}-{timestamp}"
-                print(f"Using fallback transaction ID: {tx_id}")
-            
-            # Store transaction record in database
+            # Store in database
             if db is not None:
-                uploads_collection = db.irys_uploads
                 upload_record = {
                     "tx_id": tx_id,
                     "player": request.player_address,
-                    "data": data_to_upload,
-                    "tags": [{"name": name, "value": value} for name, value in all_tags],
+                    "data": json.dumps(data_to_upload),
+                    "tags": tags,
                     "timestamp": datetime.utcnow(),
-                    "blockchain_timestamp": int(time.time() * 1000),
-                    "public_key": account.address if account else None,
-                    "content_hash": hashlib.sha256(data_bytes).hexdigest(),
-                    "network": IRYS_NETWORK,
+                    "network": "devnet",
                     "verified": True,
-                    "irys_upload_success": True,
-                    "upload_response": str(upload_response)
+                    "irys_upload_success": True
                 }
-                await uploads_collection.insert_one(upload_record)
+                await db.irys_uploads.insert_one(upload_record)
             
             return {
                 "success": True,
                 "tx_id": tx_id,
-                "gateway_url": f"{GATEWAY_URL}/{tx_id}",
-                "explorer_url": f"{GATEWAY_URL}/{tx_id}",
-                "tags": [{"name": name, "value": value} for name, value in all_tags],
-                "network": IRYS_NETWORK,
+                "gateway_url": response.get("gateway_url"),
+                "explorer_url": response.get("explorer_url"),
+                "network": "devnet",
+                "message": "Upload successful (devnet - free)",
+                "tags": tags,
                 "blockchain_verified": True,
-                "irys_upload_success": True,
-                "upload_response": str(upload_response)
+                "irys_upload_success": True
             }
+        else:
+            raise HTTPException(status_code=500, detail=f"Upload failed: {response.get('error')}")
             
-        except Exception as upload_error:
-            print(f"Irys upload failed: {str(upload_error)}")
-            
-            # Check if it's a funding issue
-            if "insufficient" in str(upload_error).lower() or "balance" in str(upload_error).lower():
-                raise HTTPException(
-                    status_code=402,
-                    detail="Insufficient balance for upload. Please fund your account at https://irys.xyz/faucet with IRYS tokens."
-                )
-            
-            # For other errors, create a fallback transaction record
-            content_hash = hashlib.sha256(data_bytes).hexdigest()
-            timestamp = int(time.time() * 1000)
-            fallback_tx_id = f"irys-fallback-{content_hash[:16]}-{timestamp}"
-            
-            # Store fallback record
-            if db is not None:
-                uploads_collection = db.irys_uploads
-                upload_record = {
-                    "tx_id": fallback_tx_id,
-                    "player": request.player_address,
-                    "data": data_to_upload,
-                    "tags": [{"name": name, "value": value} for name, value in all_tags],
-                    "timestamp": datetime.utcnow(),
-                    "blockchain_timestamp": timestamp,
-                    "public_key": account.address if account else None,
-                    "content_hash": content_hash,
-                    "network": IRYS_NETWORK,
-                    "verified": False,
-                    "irys_upload_success": False,
-                    "error": str(upload_error)
-                }
-                await uploads_collection.insert_one(upload_record)
-            
-            return {
-                "success": True,
-                "tx_id": fallback_tx_id,
-                "gateway_url": f"{GATEWAY_URL}/{fallback_tx_id}",
-                "explorer_url": f"{GATEWAY_URL}/{fallback_tx_id}",
-                "tags": [{"name": name, "value": value} for name, value in all_tags],
-                "network": IRYS_NETWORK,
-                "blockchain_verified": False,
-                "irys_upload_success": False,
-                "warning": f"Irys upload failed: {str(upload_error)}. Data stored locally."
-            }
-        
-    except HTTPException:
-        raise  # Re-raise HTTP exceptions
     except Exception as e:
-        print(f"Irys upload error: {str(e)}")
+        print(f"Upload error: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Upload failed: {str(e)}")
 
 @app.get("/api/irys/balance")
