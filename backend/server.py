@@ -537,7 +537,7 @@ async def get_irys_balance():
         raise HTTPException(status_code=500, detail="Irys client not configured")
     
     try:
-        balance = irys_client.balance()
+        balance = irys_client.get_balance()
         return {
             "balance": balance,
             "address": account.address if account else None,
