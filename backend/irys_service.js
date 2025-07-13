@@ -29,6 +29,7 @@ class IrysService {
             // Initialize uploader with devnet configuration
             this.uploader = await Uploader(Ethereum)
                 .withWallet(privateKey)
+                .withRpc("https://rpc.devnet.irys.xyz/v1")
                 .devnet(); // Force devnet for free uploads
 
             console.log('✅ Irys uploader initialized successfully');
