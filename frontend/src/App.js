@@ -49,35 +49,105 @@ const App = () => {
     audioContextRef.current = new (window.AudioContext || window.webkitAudioContext)();
   }, []);
 
-  // Initialize wallet address and game modes on component mount
+  // Initialize components on mount
   useEffect(() => {
-    const initializeWallet = async () => {
-      try {
-        const address = await getWalletAddress();
-        setWalletAddress(address);
-        toast.success('Wallet connected successfully!');
-      } catch (error) {
-        console.error('Failed to get wallet address:', error);
-        toast.error('Failed to connect to wallet. Please check your configuration.');
-      }
-    };
-
-    const fetchGameModes = async () => {
-      try {
-        const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/game-modes`);
-        if (response.ok) {
-          const data = await response.json();
-          setGameModes(data.modes);
-        }
-      } catch (error) {
-        console.error('Error fetching game modes:', error);
-      }
-    };
-
-    initializeWallet();
+    checkInitialWalletConnection();
     fetchGameModes();
     fetchLeaderboard();
+    fetchNetworkInfo();
   }, []);
+
+  const checkInitialWalletConnection = async () => {
+    try {
+      const walletCheck = await checkWalletConnection();
+      if (walletCheck.connected) {
+        setWalletAddress(walletCheck.address);
+        setWalletConnected(true);
+        await checkBalance();
+        toast.success('Wallet connected!');
+      }
+    } catch (error) {
+      console.error('Initial wallet check failed:', error);
+    }
+  };
+
+  const handleWalletConnect = async () => {
+    if (walletConnecting) return;
+    
+    setWalletConnecting(true);
+    try {
+      const connection = await connectWallet();
+      setWalletAddress(connection.address);
+      setWalletConnected(true);
+      await checkBalance();
+      toast.success('Wallet connected successfully!');
+    } catch (error) {
+      console.error('Wallet connection failed:', error);
+      toast.error(error.message || 'Failed to connect wallet');
+    } finally {
+      setWalletConnecting(false);
+    }
+  };
+
+  const checkBalance = async () => {
+    try {
+      const balanceResult = await checkIrysBalance();
+      if (balanceResult.success) {
+        setIrysBalance(balanceResult.balance);
+      } else {
+        console.error('Balance check failed:', balanceResult.error);
+      }
+    } catch (error) {
+      console.error('Balance check error:', error);
+    }
+  };
+
+  const handleFundAccount = async () => {
+    try {
+      toast.loading('Funding account...', { id: 'funding' });
+      const fundResult = await fundIrysAccount(10000);
+      
+      if (fundResult.success) {
+        toast.success(fundResult.message, { id: 'funding' });
+        await checkBalance(); // Refresh balance
+      } else {
+        if (fundResult.needsFaucet) {
+          toast.error('Please get testnet tokens from the faucet first', { id: 'funding' });
+          // Open faucet in new tab
+          if (networkInfo?.config?.faucet_url) {
+            window.open(networkInfo.config.faucet_url, '_blank');
+          }
+        } else {
+          toast.error(fundResult.error, { id: 'funding' });
+        }
+      }
+    } catch (error) {
+      toast.error('Funding failed: ' + error.message, { id: 'funding' });
+    }
+  };
+
+  const fetchNetworkInfo = async () => {
+    try {
+      const netInfo = await getNetworkInfo();
+      if (netInfo.success) {
+        setNetworkInfo(netInfo);
+      }
+    } catch (error) {
+      console.error('Failed to fetch network info:', error);
+    }
+  };
+
+  const fetchGameModes = async () => {
+    try {
+      const response = await fetch(`${process.env.REACT_APP_BACKEND_URL}/api/game-modes`);
+      if (response.ok) {
+        const data = await response.json();
+        setGameModes(data.modes);
+      }
+    } catch (error) {
+      console.error('Error fetching game modes:', error);
+    }
+  };
 
   const playPingSound = () => {
     if (!audioContextRef.current) return;
