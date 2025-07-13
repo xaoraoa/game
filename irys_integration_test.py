@@ -4,7 +4,7 @@ from datetime import datetime
 import uuid
 
 class IrysIntegrationTester:
-    def __init__(self, base_url="https://3f6678a3-3d6a-4235-827a-f9807970df62.preview.emergentagent.com"):
+    def __init__(self, base_url="https://9a1e43cd-f52c-4ea0-979f-53a286bbfd0f.preview.emergentagent.com"):
         self.base_url = base_url
         self.tests_run = 0
         self.tests_passed = 0
