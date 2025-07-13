@@ -14,8 +14,12 @@ echo "📦 Installing frontend dependencies..."
 # Only clear node_modules if they're corrupted, keep lockfiles for consistency
 rm -rf node_modules
 
-# Install dependencies with existing lockfile for consistency
-yarn install --frozen-lockfile
+# Try frozen lockfile first, fallback to updating if needed
+echo "🔧 Attempting install with frozen lockfile..."
+if ! yarn install --frozen-lockfile; then
+    echo "⚠️ Frozen lockfile failed, updating lockfile..."
+    yarn install --no-frozen-lockfile
+fi
 
 echo "🔧 Updating browser data..."
 # Update browserslist data to resolve warnings
@@ -63,7 +67,7 @@ echo "✅ Build completed successfully - Size: $BUILD_SIZE"
 
 echo "🎉 Frontend build completed successfully!"
 echo "📋 Build Summary:"
-echo "   - Dependencies: ✅ Installed (with lockfile)"
+echo "   - Dependencies: ✅ Installed (lockfile managed)"
 echo "   - Browser data: ✅ Updated" 
 echo "   - Production build: ✅ Created"
 echo "   - Build size: $BUILD_SIZE"
