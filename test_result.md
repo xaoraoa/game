@@ -113,8 +113,10 @@ user_problem_statement: |
   6. Vercel deployment configuration
   7. Testing framework with Jest + React Testing Library
 
-  CURRENT STATUS: User wants to add environment variables for Irys integration and resolve "Insufficient balance" issue. 
-  User has configured Irys Testnet v1 with Chain ID 1270 in MetaMask and provided private key for configuration.
+  CURRENT STATUS: RESOLVED - "Insufficient balance" issue fixed. 
+  Root cause: Missing Node.js dependencies (@irys/upload packages) and missing Python dependency (eth-keyfile).
+  Solution: Installed all required dependencies and restarted backend service.
+  Irys devnet integration now working correctly with real transaction uploads.
 
 backend:
   - task: "FastAPI server setup with MongoDB"
